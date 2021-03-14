@@ -70,9 +70,14 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(1,4,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(8,4,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(3)
+
+    layer_2 = tf.keras.layers.Conv1D(1,4,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
+    batch_norm_2 = tf.keras.layers.BatchNormalization()
+    max_pool_2 = tf.keras.layers.MaxPool1D(3)
+
     flatten = tf.keras.layers.Flatten()
     dropout = tf.keras.layers.Dropout(0.3)
     Dense_1 = tf.keras.layers.Dense(64,activation=tf.keras.layers.LeakyReLU(0.03))
@@ -90,7 +95,7 @@ def train_model(train_x, train_y):
     model.add(Dense_3)
     k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x, y=train_y, batch_size=100, epochs=10,shuffle=True)
+    model.fit(x=train_x, y=train_y, batch_size=100, epochs=20,shuffle=True)
     return model
 
 def make_prediction(model, input_data):

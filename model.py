@@ -77,7 +77,7 @@ def train_model(train_x, train_y):
     dropout = tf.keras.layers.Dropout(0.3)
     Dense_1 = tf.keras.layers.Dense(64,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_2 = tf.keras.layers.Dense(32,activation=None)
-    Dense_3 = tf.keras.layers.Dense(0,activation=tf.keras.layers.LeakyReLU(0.03))
+    Dense_3 = tf.keras.layers.Dense(1,activation=tf.keras.layers.LeakyReLU(0.03))
     model.add(layer_1)
     model.add(batch_norm_1)
     model.add(max_pool_1)
@@ -144,7 +144,7 @@ def main():
     pearsons,loss = evaluation_metrics(train_prediction, train_y)
     print("Pearsons correlation co-efficent: ", pearsons)
     print("Average final Mean squared error loss: ",loss)
-    generate_csv(test_prediction,eval_cells, test_data)
+    generate_csv(test_prediction.flatten(),eval_cells, test_data)
 
 
 if __name__ == '__main__':

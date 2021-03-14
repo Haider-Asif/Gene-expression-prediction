@@ -59,9 +59,8 @@ def k_cross_validate_model(train_x, train_y, k):
         # model.add(Dense_2)
         # model.add(dropout)
         # model.add(Dense_3)
-        # k_cross_validate_model(train_x,train_y,5)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=100, epochs=10, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=100, epochs=0, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -119,10 +118,10 @@ def generate_plots(train_x,prediction, num_images):
         ax2.title.set_text("predicted high-resolution output")
         plt.show()
 
-def generate_csv(eval_inputs,eval_cells,eval_data):
+def generate_csv(eval_preds,eval_cells,eval_data):
     cell_list = []
     gene_list = []
-    example_eval_preds = np.random.randn(len(eval_inputs))
+    example_eval_preds = eval_preds
     for cell in eval_cells:
         cell_data = eval_data[cell]
         cell_list.extend([cell]*len(cell_data))
@@ -130,7 +129,7 @@ def generate_csv(eval_inputs,eval_cells,eval_data):
         gene_list.extend(genes)
 
     id_column = [] # ID is {cell type}_{gene id}
-    for idx in range(len(eval_inputs)):
+    for idx in range(len(eval_preds)):
         id_column.append(f'{cell_list[idx]}_{gene_list[idx]}')
 
     df_data = {'id': id_column, 'expression' : example_eval_preds}
@@ -156,7 +155,7 @@ def main():
     pearsons,loss = evaluation_metrics(train_prediction, train_y)
     print("Pearsons correlation co-efficent: ", pearsons)
     print("Average final Mean squared error loss: ",loss)
-    generate_csv(test_x,eval_cells, test_data)
+    generate_csv(test_prediction,eval_cells, test_data)
     # generate_plots(train_y,train_prediction,100)
     # generate_plots(test_x,test_prediction,100)
 

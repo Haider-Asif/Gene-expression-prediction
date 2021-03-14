@@ -48,14 +48,20 @@ def k_cross_validate_model(train_x, train_y, k):
         training_x = np.concatenate((train_x[0:int(i*(1/k)*train_x.shape[0])],train_x[int((i+1)*(1/k)*train_x.shape[0]):train_x.shape[0]]), axis=0)
         training_y = np.concatenate((train_y[0:int(i*(1/k)*train_y.shape[0])],train_y[int((i+1)*(1/k)*train_y.shape[0]):train_y.shape[0]]), axis=0)
         model = tf.keras.Sequential()
-        layer_1 = tf.keras.layers.Conv2D(8,9,activation=tf.keras.layers.ReLU(), padding="valid")
-        layer_2 = tf.keras.layers.Conv2D(8,1,activation=tf.keras.layers.ReLU(), padding="valid")
-        layer_3 = tf.keras.layers.Conv2D(1,5,activation=tf.keras.layers.ReLU(), padding="valid")
+        layer_1 = tf.keras.layers.Conv1D(1,5,activation=tf.keras.layers.ReLU(), padding="SAME")
+        batch_norm_1 = tf.keras.layers.BatchNormalization()
+        max_pool_1 = tf.keras.layers.MaxPool1D(3)
+        flatten = tf.keras.layers.Flatten()
+        dropout_1 = tf.keras.layers.Dropout(0.3)
+        Dense_1 = tf.keras.layers.Dense(train_x.shape[0],activation=tf.keras.layers.LeakyReLU(0.03))
         model.add(layer_1)
-        model.add(layer_2)
-        model.add(layer_3)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.008), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=10000, epochs=1, validation_data=(validation_x,validation_y), shuffle=True)
+        model.add(batch_norm_1)
+        model.add(max_pool_1)
+        model.add(flatten)
+        model.add(dropout_1)
+        model.add(Dense_1)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
+        model.fit(x=training_x, y=training_y, batch_size=100, epochs=2, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -65,7 +71,7 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(1,5,activation=tf.keras.layers.ReLU(), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(32,5,activation=tf.keras.layers.ReLU(), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
@@ -77,9 +83,9 @@ def train_model(train_x, train_y):
     model.add(flatten)
     model.add(dropout_1)
     model.add(Dense_1)
-    # k_cross_validate_model(train_x,train_y,4)
+    # k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x[0:100000], y=train_y[0:100000], batch_size=1000, epochs=1,shuffle=True)
+    model.fit(x=train_x, y=train_y, batch_size=100, epochs=20,shuffle=True)
     return model
 
 def make_prediction(model, input_data):
@@ -112,7 +118,7 @@ def main():
     train_x, train_y, test_x = get_data()
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model
-    model = train_model(train_x,train_y)
+    model = train_model(train_x[0:10000],train_y[0:100000])
     # Visualize several of the training and test matrix patches
     test_prediction = make_prediction(model, test_x)
     train_prediction = make_prediction(model,train_x)

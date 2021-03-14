@@ -71,7 +71,7 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(32,5,activation=tf.keras.layers.ReLU(), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(1,5,activation=tf.keras.layers.ReLU(), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
@@ -118,7 +118,7 @@ def main():
     train_x, train_y, test_x = get_data()
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model
-    model = train_model(train_x[0:10000],train_y[0:100000])
+    model = train_model(train_x,train_y)
     # Visualize several of the training and test matrix patches
     test_prediction = make_prediction(model, test_x)
     train_prediction = make_prediction(model,train_x)

@@ -64,14 +64,14 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(1,5,activation=tf.keras.layers.ReLU(), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(32,5,activation=tf.keras.layers.ReLU(), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
     dropout = tf.keras.layers.Dropout(0.3)
-    Dense_1 = tf.keras.layers.Dense(64,activation=tf.keras.layers.ReLU())
+    Dense_1 = tf.keras.layers.Dense(64,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_2 = tf.keras.layers.Dense(32,activation=None)
-    Dense_3 = tf.keras.layers.Dense(1,activation=tf.keras.layers.ReLU())
+    Dense_3 = tf.keras.layers.Dense(1,activation=tf.keras.layers.LeakyReLU(0.03))
     model.add(layer_1)
     model.add(batch_norm_1)
     model.add(max_pool_1)

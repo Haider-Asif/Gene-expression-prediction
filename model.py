@@ -60,7 +60,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(dropout)
         model.add(Dense_3)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=100, epochs=3, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=100, epochs=5, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -93,7 +93,7 @@ def train_model(train_x, train_y):
     model.add(Dense_2)
     model.add(dropout)
     model.add(Dense_3)
-    k_cross_validate_model(train_x,train_y,5)
+    # k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     model.fit(x=train_x, y=train_y, batch_size=100, epochs=20,shuffle=True)
     return model

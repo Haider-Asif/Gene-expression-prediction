@@ -83,8 +83,8 @@ def train_model(train_x, train_y):
     # model.add(dropout)
     # model.add(Dense_3)
     # k_cross_validate_model(train_x,train_y,5)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x, y=train_y, batch_size=64, epochs=10,shuffle=True)
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.05), loss=tf.keras.losses.MeanSquaredError())
+    model.fit(x=train_x, y=train_y, batch_size=100, epochs=10,shuffle=True)
     return model
 
 def make_prediction(model, input_data):

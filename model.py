@@ -76,7 +76,7 @@ def train_model(train_x, train_y):
     model.add(batch_norm_1)
     model.add(max_pool_1)
     model.add(flatten)
-    model.add(dropout)
+    # model.add(dropout)
     model.add(Dense_3)
     # model.add(dropout)
     # model.add(Dense_2)

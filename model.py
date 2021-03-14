@@ -65,7 +65,7 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(4,4,activation=tf.keras.layers.ReLU(), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(1,5,activation=tf.keras.layers.ReLU(), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
@@ -79,7 +79,7 @@ def train_model(train_x, train_y):
     model.add(Dense_1)
     # k_cross_validate_model(train_x,train_y,4)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x, y=train_y, batch_size=10000, epochs=1,shuffle=True)
+    model.fit(x=train_x, y=train_y, batch_size=1000, epochs=1,shuffle=True)
     return model
 
 def make_prediction(model, input_data):

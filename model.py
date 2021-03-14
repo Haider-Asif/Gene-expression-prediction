@@ -79,7 +79,7 @@ def train_model(train_x, train_y):
     model.add(Dense_1)
     # k_cross_validate_model(train_x,train_y,4)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x, y=train_y, batch_size=1000, epochs=1,shuffle=True)
+    model.fit(x=train_x[0:100000], y=train_y[0:100000], batch_size=1000, epochs=1,shuffle=True)
     return model
 
 def make_prediction(model, input_data):

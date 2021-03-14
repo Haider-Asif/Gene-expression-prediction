@@ -77,17 +77,17 @@ def train_model(train_x, train_y):
     dropout = tf.keras.layers.Dropout(0.3)
     Dense_1 = tf.keras.layers.Dense(64,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_2 = tf.keras.layers.Dense(32,activation=None)
-    Dense_3 = tf.keras.layers.Dense(1,activation=tf.keras.layers.LeakyReLU(0.03))
+    Dense_3 = tf.keras.layers.Dense(0,activation=tf.keras.layers.LeakyReLU(0.03))
     model.add(layer_1)
     model.add(batch_norm_1)
     model.add(max_pool_1)
     model.add(flatten)
     model.add(dropout)
-    model.add(Dense_3)
+    # model.add(Dense_1)
     # model.add(dropout)
     # model.add(Dense_2)
     # model.add(dropout)
-    # model.add(Dense_3)
+    model.add(Dense_3)
     k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     model.fit(x=train_x, y=train_y, batch_size=100, epochs=10,shuffle=True)
@@ -105,18 +105,6 @@ def evaluation_metrics(prediction, train_y):
     r,_ = pearsonr(train_y.flatten(), prediction.flatten())
     loss = mean_squared_error(train_y.flatten(), prediction.flatten())
     return r,loss
-
-def generate_plots(train_x,prediction, num_images):
-    random_ints = np.random.choice(np.arange(0,train_x.shape[0]),replace=False, size=num_images)
-    # print(random_ints)
-    for i in random_ints:
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.imshow(train_x[i,:,:,0], cmap="Reds")
-        ax1.title.set_text("original low-resolution input")
-        # ax1.title.set_text("original high-resolution output")
-        ax2.imshow(prediction[i,:,:,0], cmap="Reds")
-        ax2.title.set_text("predicted high-resolution output")
-        plt.show()
 
 def generate_csv(eval_preds,eval_cells,eval_data):
     cell_list = []
@@ -150,14 +138,13 @@ def main():
     model = train_model(train_x,train_y)
     # Visualize several of the training and test matrix patches
     test_prediction = make_prediction(model, test_x)
+
     train_prediction = make_prediction(model,train_x)
 
     pearsons,loss = evaluation_metrics(train_prediction, train_y)
     print("Pearsons correlation co-efficent: ", pearsons)
     print("Average final Mean squared error loss: ",loss)
     generate_csv(test_prediction,eval_cells, test_data)
-    # generate_plots(train_y,train_prediction,100)
-    # generate_plots(test_x,test_prediction,100)
 
 
 if __name__ == '__main__':

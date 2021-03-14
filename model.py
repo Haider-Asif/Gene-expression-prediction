@@ -85,7 +85,7 @@ def train_model(train_x, train_y):
     Dense_3 = tf.keras.layers.Dense(16,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
-    model.add(batch_norm_1)
+    # model.add(batch_norm_1)
     model.add(max_pool_1)
     model.add(flatten)
     # model.add(dropout)

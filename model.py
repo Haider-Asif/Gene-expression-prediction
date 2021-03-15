@@ -81,7 +81,6 @@ def train_model(train_x, train_y):
 
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
-    flatten = tf.keras.layers.Flatten()
     dropout1 = tf.keras.layers.Dropout(0.5)
     dropout2 = tf.keras.layers.Dropout(0.3)
     Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
@@ -94,13 +93,12 @@ def train_model(train_x, train_y):
     # model.add(layer_2)
     # model.add(batch_norm_2)
     # model.add(max_pool_2)
-    model.add(flatten)
     # model.add(lstm)
     # model.add(dropout)
     model.add(Dense_1)
     model.add(dropout1)
     model.add(Dense_2)
-    model.add(dropout)
+    model.add(dropout1)
     model.add(Dense_3)
     model.add(dropout1)
     model.add(Dense_4)

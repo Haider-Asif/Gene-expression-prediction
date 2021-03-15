@@ -76,7 +76,7 @@ def train_model(train_x, train_y):
 
     flatten = tf.keras.layers.Flatten()
     dropout = tf.keras.layers.Dropout(0.5)
-    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.03))
+    Dense_1 = tf.keras.layers.Dense(625,activation=None)
     Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_3 = tf.keras.layers.Dense(16,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)

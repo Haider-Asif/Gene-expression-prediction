@@ -60,7 +60,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(dropout)
         model.add(Dense_3)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=100, epochs=5, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=100, epochs=0, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -70,14 +70,14 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(8,4,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
-    max_pool_1 = tf.keras.layers.MaxPool1D(3)
+    max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
     flatten = tf.keras.layers.Flatten()
     dropout = tf.keras.layers.Dropout(0.5)
-    Dense_1 = tf.keras.layers.Dense(64,activation=tf.keras.layers.LeakyReLU(0.03))
-    Dense_2 = tf.keras.layers.Dense(32,activation=None)
+    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.03))
+    Dense_2 = tf.keras.layers.Dense(125,activation=None)
     Dense_3 = tf.keras.layers.Dense(16,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
@@ -91,10 +91,10 @@ def train_model(train_x, train_y):
     model.add(Dense_1)
     model.add(dropout)
     model.add(Dense_2)
-    model.add(dropout)
-    model.add(Dense_3)
-    model.add(dropout)
-    model.add(Dense_4)
+    # model.add(dropout)
+    # model.add(Dense_3)
+    # model.add(dropout)
+    # model.add(Dense_4)
     k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     model.fit(x=train_x, y=train_y, batch_size=100, epochs=20,shuffle=True)

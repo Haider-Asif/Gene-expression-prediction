@@ -136,7 +136,7 @@ def train_model(train_x, train_y):
     # model.add(dropout1)
     # model.add(Dense_3)
     model.add(Dense_4)
-    # k_cross_validate_model(train_x,train_y,4)
+    k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     model.fit(x=train_x, y=train_y, batch_size=250, epochs=30,shuffle=True)
     return model

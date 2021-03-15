@@ -63,7 +63,7 @@ def k_cross_validate_model(train_x, train_y, k):
         lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
         dropout1 = tf.keras.layers.Dropout(0.5)
-        dropout1 = tf.keras.layers.Dropout(0.25)
+        dropout2 = tf.keras.layers.Dropout(0.25)
         Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_3 = tf.keras.layers.Dense(25,activation=tf.keras.layers.LeakyReLU(0.05))

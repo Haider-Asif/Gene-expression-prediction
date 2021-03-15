@@ -61,7 +61,7 @@ def k_cross_validate_model(train_x, train_y, k):
         # model.add(dropout1)
         model.add(Dense_3)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=128, epochs=7, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=128, epochs=0, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -80,16 +80,13 @@ def train_model(train_x, train_y):
 
     dropout1 = tf.keras.layers.Dropout(0.5)
     Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_3 = tf.keras.layers.Dense(1,activation=None)
+    Dense_2 = tf.keras.layers.Dense(125,activation=None)
+    Dense_3 = tf.keras.layers.Dense(25,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     model.add(batch_norm_1)
     model.add(max_pool_1)
     model.add(flatten)
-    # model.add(lstm)
-    # model.add(layer_2)
-    # model.add(batch_norm_2)
-    # model.add(max_pool_2)
     # model.add(lstm)
     model.add(dropout1)
     model.add(Dense_1)

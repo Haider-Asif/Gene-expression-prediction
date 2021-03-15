@@ -47,15 +47,15 @@ def k_cross_validate_model(train_x, train_y, k):
         batch_norm_1 = tf.keras.layers.BatchNormalization()
         max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-        layer_2 = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
+        layer_2 = tf.keras.layers.Conv1D(25,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
         batch_norm_2 = tf.keras.layers.BatchNormalization()
         max_pool_2 = tf.keras.layers.MaxPool1D(2)
 
-        layer_n = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        layer_n = tf.keras.layers.Conv1D(25,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
         batch_norm_n = tf.keras.layers.BatchNormalization()
         max_pool_n = tf.keras.layers.MaxPool1D(2)
 
-        layer_3 = tf.keras.layers.Conv1D(25,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        layer_3 = tf.keras.layers.Conv1D(10,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         batch_norm_3 = tf.keras.layers.BatchNormalization()
         max_pool_3 = tf.keras.layers.MaxPool1D(3)
         flatten = tf.keras.layers.Flatten()
@@ -64,8 +64,8 @@ def k_cross_validate_model(train_x, train_y, k):
 
         dropout1 = tf.keras.layers.Dropout(0.5)
         dropout2 = tf.keras.layers.Dropout(0.25)
-        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
-        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_1 = tf.keras.layers.Dense(200,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_2 = tf.keras.layers.Dense(25,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_3 = tf.keras.layers.Dense(25,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_4 = tf.keras.layers.Dense(1,activation=None)
         model.add(layer_1)

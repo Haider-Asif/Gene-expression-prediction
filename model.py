@@ -82,7 +82,7 @@ def train_model(train_x, train_y):
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-    lstm = tf.keras.layers.LSTM(200, return_sequences=True)
+    lstm = tf.keras.layers.LSTM(50, return_sequences=True)
 
     flatten = tf.keras.layers.Flatten()
     dropout = tf.keras.layers.Dropout(0.5)

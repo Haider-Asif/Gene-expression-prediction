@@ -43,7 +43,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model = tf.keras.Sequential()
         layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         batch_norm_1 = tf.keras.layers.BatchNormalization()
-        max_pool_1 = tf.keras.layers.MaxPool1D(5, padding="SAME")
+        max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
         flatten = tf.keras.layers.Flatten()
         dropout1 = tf.keras.layers.Dropout(0.5)
@@ -68,7 +68,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(dropout2)
         model.add(Dense_4)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=100, epochs=7, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=100, epochs=0, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -80,7 +80,7 @@ def train_model(train_x, train_y):
     model = tf.keras.Sequential()
     layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
-    max_pool_1 = tf.keras.layers.MaxPool1D(5, padding="SAME")
+    max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 

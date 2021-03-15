@@ -64,7 +64,7 @@ def k_cross_validate_model(train_x, train_y, k):
         # model.add(dropout1)
         model.add(Dense_4)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=128, epochs=3, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=128, epochs=7, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """

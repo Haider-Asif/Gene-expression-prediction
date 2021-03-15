@@ -97,11 +97,11 @@ def train_model(train_x, train_y):
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
     batch_norm_2 = tf.keras.layers.BatchNormalization()
     max_pool_2 = tf.keras.layers.MaxPool1D(2)
 
-    layer_3 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+    layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
     batch_norm_3 = tf.keras.layers.BatchNormalization()
     max_pool_3 = tf.keras.layers.MaxPool1D(5)
     flatten = tf.keras.layers.Flatten()
@@ -134,9 +134,9 @@ def train_model(train_x, train_y):
     # model.add(dropout1)
     # model.add(Dense_3)
     model.add(Dense_4)
-    k_cross_validate_model(train_x,train_y,4)
+    # k_cross_validate_model(train_x,train_y,4)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x, y=train_y, batch_size=128, epochs=20,shuffle=True)
+    model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
     return model
 
 def make_prediction(model, input_data):

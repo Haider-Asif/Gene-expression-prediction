@@ -76,7 +76,7 @@ def train_model(train_x, train_y):
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
     flatten = tf.keras.layers.Flatten()
 
-    lstm = tf.keras.layers.LSTM(200, return_sequences=True)
+    lstm = tf.keras.layers.RNN(200, return_sequences=True)
 
     dropout1 = tf.keras.layers.Dropout(0.5)
     dropout2 = tf.keras.layers.Dropout(0.3)

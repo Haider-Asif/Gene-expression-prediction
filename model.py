@@ -79,6 +79,9 @@ def train_model(train_x, train_y):
     batch_norm_2 = tf.keras.layers.BatchNormalization()
     max_pool_2 = tf.keras.layers.MaxPool1D(2)
 
+    layer_3 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+    batch_norm_3 = tf.keras.layers.BatchNormalization()
+    max_pool_3 = tf.keras.layers.MaxPool1D(5)
     flatten = tf.keras.layers.Flatten()
 
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)
@@ -95,6 +98,10 @@ def train_model(train_x, train_y):
     model.add(layer_2)
     model.add(batch_norm_2)
     model.add(max_pool_2)
+
+    model.add(layer_3)
+    model.add(batch_norm_3)
+    model.add(max_pool_3)
 
     model.add(flatten)
     # model.add(lstm)

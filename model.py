@@ -46,13 +46,17 @@ def k_cross_validate_model(train_x, train_y, k):
         batch_norm_1 = tf.keras.layers.BatchNormalization()
         max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-        layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        layer_2 = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
         batch_norm_2 = tf.keras.layers.BatchNormalization()
-        max_pool_2 = tf.keras.layers.MaxPool1D(3)
+        max_pool_2 = tf.keras.layers.MaxPool1D(2)
 
-        layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        layer_n = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        batch_norm_n = tf.keras.layers.BatchNormalization()
+        max_pool_n = tf.keras.layers.MaxPool1D(2)
+
+        layer_3 = tf.keras.layers.Conv1D(25,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         batch_norm_3 = tf.keras.layers.BatchNormalization()
-        max_pool_3 = tf.keras.layers.MaxPool1D(5)
+        max_pool_3 = tf.keras.layers.MaxPool1D(3)
         flatten = tf.keras.layers.Flatten()
 
         lstm = tf.keras.layers.LSTM(200, return_sequences=True)
@@ -70,6 +74,10 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(batch_norm_2)
         model.add(max_pool_2)
 
+        model.add(layer_n)
+        model.add(batch_norm_n)
+        model.add(max_pool_n)
+
         model.add(layer_3)
         model.add(batch_norm_3)
         model.add(max_pool_3)
@@ -83,7 +91,7 @@ def k_cross_validate_model(train_x, train_y, k):
         # model.add(dropout1)
         # model.add(Dense_3)
         model.add(Dense_4)
-        # k_cross_validate_model(train_x,train_y,4)
+        # k_cross_validate_model(train_x,train_y,5)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
         model.fit(x=training_x, y=training_y, batch_size=250, epochs=30, validation_data=(validation_x,validation_y), shuffle=True)
 
@@ -99,17 +107,17 @@ def train_model(train_x, train_y):
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
+    layer_2 = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
     batch_norm_2 = tf.keras.layers.BatchNormalization()
-    max_pool_2 = tf.keras.layers.MaxPool1D(3)
+    max_pool_2 = tf.keras.layers.MaxPool1D(2)
 
-    layer_n = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+    layer_n = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
     batch_norm_n = tf.keras.layers.BatchNormalization()
-    max_pool_n = tf.keras.layers.MaxPool1D(3)
+    max_pool_n = tf.keras.layers.MaxPool1D(2)
 
-    layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+    layer_3 = tf.keras.layers.Conv1D(25,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
     batch_norm_3 = tf.keras.layers.BatchNormalization()
-    max_pool_3 = tf.keras.layers.MaxPool1D(5)
+    max_pool_3 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
 
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)

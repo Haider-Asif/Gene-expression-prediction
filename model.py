@@ -76,7 +76,7 @@ def train_model(train_x, train_y):
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
     flatten = tf.keras.layers.Flatten()
 
-    lstm = tf.keras.layers.RNN(200, return_sequences=True)
+    lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
     dropout1 = tf.keras.layers.Dropout(0.5)
     dropout2 = tf.keras.layers.Dropout(0.3)
@@ -85,7 +85,7 @@ def train_model(train_x, train_y):
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     model.add(batch_norm_1)
-    # model.add(max_pool_1)
+    model.add(max_pool_1)
     # model.add(flatten)
     model.add(lstm)
     # model.add(layer_2)
@@ -145,7 +145,7 @@ def main():
     train_x, train_y, test_x, test_data = get_data(train_cells,eval_cells)
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model
-    model = train_model(train_x,train_y)
+    model = train_model(train_x[0:10000],train_y[0:10000])
     # Visualize several of the training and test matrix patches
     test_prediction = make_prediction(model, test_x)
 

@@ -70,13 +70,9 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(8,4,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(8,(5,4),activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(3)
-
-    layer_2 = tf.keras.layers.Conv1D(4,4,activation=tf.keras.layers.LeakyReLU(0.03), padding="SAME")
-    batch_norm_2 = tf.keras.layers.BatchNormalization()
-    max_pool_2 = tf.keras.layers.MaxPool1D(2)
 
     flatten = tf.keras.layers.Flatten()
     dropout = tf.keras.layers.Dropout(0.5)
@@ -84,7 +80,6 @@ def train_model(train_x, train_y):
     Dense_2 = tf.keras.layers.Dense(32,activation=None)
     Dense_3 = tf.keras.layers.Dense(16,activation=tf.keras.layers.LeakyReLU(0.03))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
-    Dense_5 = tf.keras.layers.Dense(1,activation=tf.keras.layers.LeakyReLU(0.03))
     model.add(layer_1)
     model.add(batch_norm_1)
     model.add(max_pool_1)
@@ -100,8 +95,6 @@ def train_model(train_x, train_y):
     model.add(Dense_3)
     model.add(dropout)
     model.add(Dense_4)
-    # model.add(dropout)
-    # model.add(Dense_5)
     # k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     model.fit(x=train_x, y=train_y, batch_size=100, epochs=20,shuffle=True)

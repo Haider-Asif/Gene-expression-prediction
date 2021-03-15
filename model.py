@@ -36,6 +36,7 @@ def get_data(train_cells,eval_cells):
 
 def k_cross_validate_model(train_x, train_y, k):
     for i in range(k):
+        print('Running fold ' + str(i))
         validation_x = train_x[int(i*(1/k)*train_x.shape[0]):int((i+1)*(1/k)*train_x.shape[0])]
         validation_y = train_y[int(i*(1/k)*train_y.shape[0]):int((i+1)*(1/k)*train_y.shape[0])]
         training_x = np.concatenate((train_x[0:int(i*(1/k)*train_x.shape[0])],train_x[int((i+1)*(1/k)*train_x.shape[0]):train_x.shape[0]]), axis=0)

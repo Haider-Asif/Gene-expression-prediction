@@ -131,7 +131,12 @@ def train_model(train_x, train_y):
     model.add(Dense_2)
  
     model.add(Dense_4)
+<<<<<<< Updated upstream
     # k_cross_validate_model(train_x,train_y,4)
+=======
+    model.summary()
+    k_cross_validate_model(train_x,train_y,4)
+>>>>>>> Stashed changes
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
     create_train_plots(history.history["loss"])
@@ -176,7 +181,6 @@ def create_train_plots(training_losses):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.xticks(np.arange(1, len(x)+1, 1))
-    plt.legend() 
     plt.savefig('train_plot.png')
 
 def create_val_plots(training_losses,validation_losses):

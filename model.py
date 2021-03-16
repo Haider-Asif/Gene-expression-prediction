@@ -175,6 +175,8 @@ def create_train_plots(training_losses):
     plt.title('Training Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
+    plt.xticks(np.arange(1, len(x)+1, 1))
+    plt.legend() 
     plt.savefig('train_plot.png')
 
 def create_val_plots(training_losses,validation_losses):
@@ -185,6 +187,8 @@ def create_val_plots(training_losses,validation_losses):
     plt.title('Cross Fold Validation Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
+    plt.xticks(np.arange(1, len(validation_losses[0])+1, 1))
+    plt.legend() 
     plt.savefig('val_plot.png')
 
 def main():

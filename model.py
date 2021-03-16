@@ -47,7 +47,7 @@ def k_cross_validate_model(train_x, train_y, k):
         batch_norm_1 = tf.keras.layers.BatchNormalization()
         max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-        layer_2 = tf.keras.layers.Conv1D(25,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        layer_2 = tf.keras.layers.Conv1D(10,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
         batch_norm_2 = tf.keras.layers.BatchNormalization()
         max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
@@ -56,9 +56,11 @@ def k_cross_validate_model(train_x, train_y, k):
         max_pool_3 = tf.keras.layers.MaxPool1D(5)
         flatten = tf.keras.layers.Flatten()
 
-        dropout1 = tf.keras.layers.Dropout(0.5)
-        Dense_1 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
-        Dense_2 = tf.keras.layers.Dense(25,activation=tf.keras.layers.LeakyReLU(0.05))
+        lstm = tf.keras.layers.LSTM(200, return_sequences=True)
+
+        dropout1 = tf.keras.layers.Dropout(0.7)
+        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_4 = tf.keras.layers.Dense(1,activation=None)
         model.add(layer_1)
         model.add(batch_norm_1)
@@ -83,7 +85,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(Dense_4)
         # k_cross_validate_model(train_x,train_y,4)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
+        model.fit(x=training_x, y=training_y, batch_size=250, epochs=0, validation_data=(validation_x,validation_y), shuffle=True)
 
 def train_model(train_x, train_y):
     """
@@ -112,7 +114,7 @@ def train_model(train_x, train_y):
 
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
-    dropout1 = tf.keras.layers.Dropout(0.5)
+    dropout1 = tf.keras.layers.Dropout(0.7)
     Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)

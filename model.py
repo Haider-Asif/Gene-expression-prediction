@@ -108,8 +108,8 @@ def train_model(train_x, train_y):
     flatten = tf.keras.layers.Flatten()
 
     dropout1 = tf.keras.layers.Dropout(0.5)
-    Dense_1 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_2 = tf.keras.layers.Dense(25,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     model.add(batch_norm_1)

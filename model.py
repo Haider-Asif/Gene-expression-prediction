@@ -47,11 +47,11 @@ def k_cross_validate_model(train_x, train_y, k):
         batch_norm_1 = tf.keras.layers.BatchNormalization()
         max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-        layer_2 = tf.keras.layers.Conv1D(10,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
         batch_norm_2 = tf.keras.layers.BatchNormalization()
         max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
-        layer_3 = tf.keras.layers.Conv1D(10,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         batch_norm_3 = tf.keras.layers.BatchNormalization()
         max_pool_3 = tf.keras.layers.MaxPool1D(5)
         flatten = tf.keras.layers.Flatten()
@@ -59,8 +59,8 @@ def k_cross_validate_model(train_x, train_y, k):
         lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
         dropout1 = tf.keras.layers.Dropout(0.7)
-        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05),kernel_regularizer='l2')
-        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05),kernel_regularizer='l2')
+        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_4 = tf.keras.layers.Dense(1,activation=None)
         model.add(layer_1)
         model.add(batch_norm_1)
@@ -115,8 +115,8 @@ def train_model(train_x, train_y):
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
     dropout1 = tf.keras.layers.Dropout(0.7)
-    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05),kernel_regularizer='l2')
-    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05),kernel_regularizer='l2')
+    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     model.add(batch_norm_1)

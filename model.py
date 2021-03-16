@@ -98,7 +98,7 @@ def train_model(train_x, train_y):
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
+    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
     batch_norm_2 = tf.keras.layers.BatchNormalization()
     max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
@@ -131,12 +131,8 @@ def train_model(train_x, train_y):
     model.add(Dense_2)
  
     model.add(Dense_4)
-<<<<<<< Updated upstream
-    # k_cross_validate_model(train_x,train_y,4)
-=======
     model.summary()
-    k_cross_validate_model(train_x,train_y,4)
->>>>>>> Stashed changes
+    # k_cross_validate_model(train_x,train_y,4)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
     create_train_plots(history.history["loss"])

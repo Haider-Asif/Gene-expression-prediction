@@ -85,7 +85,8 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(Dense_4)
         # k_cross_validate_model(train_x,train_y,4)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-        model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
+        history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
+        create_val_plots(history.history["loss"])
 
 def train_model(train_x, train_y):
     """
@@ -144,7 +145,8 @@ def train_model(train_x, train_y):
     model.add(Dense_4)
     k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
+    history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
+    create_train_plots(history.history["loss"])
     return model
 
 def make_prediction(model, input_data):
@@ -179,7 +181,7 @@ def generate_csv(eval_preds,eval_cells,eval_data):
 
     submit_df.to_csv('../sample_submission.csv', header=True, index=False, index_label=False)
 
-def create_train_plots(training_losses, training_accuracies):
+def create_train_plots(training_losses):
     x = [i for i in range(len(training_losses))]
     plt.plot(x, training_losses)
     plt.title('Training Loss per epoch')
@@ -187,26 +189,12 @@ def create_train_plots(training_losses, training_accuracies):
     plt.ylabel('Loss')
     plt.show()
 
-    y = [i for i in range(len(training_accuracies))]
-    plt.plot(y, training_accuracies)
-    plt.title('Training Accuracy per epoch')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.show()
-
-def create_val_plots(validation_losses, validation_accuracies):
+def create_val_plots(validation_losses):
     z = [i for i in range(len(validation_losses))]
     plt.plot(z, validation_losses)
     plt.title('Validation Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.show()
-
-    z1 = [i for i in range(len(validation_accuracies))]
-    plt.plot(z1, validation_accuracies)
-    plt.title('Validation Accuracy per epoch')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
     plt.show()
 
 def main():

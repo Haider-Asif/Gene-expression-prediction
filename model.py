@@ -63,15 +63,15 @@ def k_cross_validate_model(train_x, train_y, k):
         Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_4 = tf.keras.layers.Dense(1,activation=None)
         model.add(layer_1)
-        model.add(batch_norm_1)
+        # model.add(batch_norm_1)
         model.add(max_pool_1)
 
         model.add(layer_2)
-        model.add(batch_norm_2)
+        # model.add(batch_norm_2)
         model.add(max_pool_2)
 
         model.add(layer_3)
-        model.add(batch_norm_3)
+        # model.add(batch_norm_3)
         model.add(max_pool_3)
 
         model.add(flatten)
@@ -114,15 +114,15 @@ def train_model(train_x, train_y):
     Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
-    model.add(batch_norm_1)
+    # model.add(batch_norm_1)
     model.add(max_pool_1)
 
     model.add(layer_2)
-    model.add(batch_norm_2)
+    # model.add(batch_norm_2)
     model.add(max_pool_2)
 
     model.add(layer_3)
-    model.add(batch_norm_3)
+    # model.add(batch_norm_3)
     model.add(max_pool_3)
 
     model.add(flatten)
@@ -133,7 +133,7 @@ def train_model(train_x, train_y):
     model.add(Dense_2)
  
     model.add(Dense_4)
-    k_cross_validate_model(train_x,train_y,4)
+    # k_cross_validate_model(train_x,train_y,4)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
     history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
     model.summary()

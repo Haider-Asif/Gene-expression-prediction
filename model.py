@@ -132,7 +132,7 @@ def train_model(train_x, train_y):
  
     model.add(Dense_4)
     # k_cross_validate_model(train_x,train_y,4)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.015), loss=tf.keras.losses.MeanSquaredError())
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.012), loss=tf.keras.losses.MeanSquaredError())
     history = model.fit(x=train_x, y=train_y, batch_size=500, epochs=20,shuffle=True)
     create_train_plots(history.history["loss"])
     return model

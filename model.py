@@ -35,6 +35,8 @@ def get_data(train_cells,eval_cells):
     return train_inputs, train_outputs, eval_inputs,eval_data
 
 def k_cross_validate_model(train_x, train_y, k):
+    val_loss = []
+    train_loss = []
     for i in range(k):
         print('Running fold ' + str(i+1))
         validation_x = train_x[int(i*(1/k)*train_x.shape[0]):int((i+1)*(1/k)*train_x.shape[0])]
@@ -56,11 +58,9 @@ def k_cross_validate_model(train_x, train_y, k):
         max_pool_3 = tf.keras.layers.MaxPool1D(5)
         flatten = tf.keras.layers.Flatten()
 
-        lstm = tf.keras.layers.LSTM(200, return_sequences=True)
-
         dropout1 = tf.keras.layers.Dropout(0.5)
-        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.01))
-        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.01))
+        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_4 = tf.keras.layers.Dense(1,activation=None)
         model.add(layer_1)
         model.add(batch_norm_1)
@@ -75,18 +75,16 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(max_pool_3)
 
         model.add(flatten)
-        # model.add(lstm)
+
         model.add(dropout1)
         model.add(Dense_1)
-        # model.add(dropout1)
         model.add(Dense_2)
-        # model.add(dropout1)
-        # model.add(Dense_3)
         model.add(Dense_4)
-        # k_cross_validate_model(train_x,train_y,4)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
         history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
-        create_val_plots(history.history["loss"])
+        val_loss.append(history.history["val_loss"])
+        train_loss.append(history.history["loss"])
+    create_val_plots(train_loss,val_loss)
 
 def train_model(train_x, train_y):
     """
@@ -104,20 +102,14 @@ def train_model(train_x, train_y):
     batch_norm_2 = tf.keras.layers.BatchNormalization()
     max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
-    layer_n = tf.keras.layers.Conv1D(50,4,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-    batch_norm_n = tf.keras.layers.BatchNormalization()
-    max_pool_n = tf.keras.layers.MaxPool1D(2)
-
     layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
     batch_norm_3 = tf.keras.layers.BatchNormalization()
     max_pool_3 = tf.keras.layers.MaxPool1D(5)
     flatten = tf.keras.layers.Flatten()
 
-    lstm = tf.keras.layers.LSTM(200, return_sequences=True)
-
     dropout1 = tf.keras.layers.Dropout(0.5)
-    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.01))
-    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.01))
+    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     model.add(batch_norm_1)
@@ -127,21 +119,17 @@ def train_model(train_x, train_y):
     model.add(batch_norm_2)
     model.add(max_pool_2)
 
-    # model.add(layer_n)
-    # model.add(batch_norm_n)
-    # model.add(max_pool_n)
-
     model.add(layer_3)
     model.add(batch_norm_3)
     model.add(max_pool_3)
 
     model.add(flatten)
-    # model.add(lstm)
+
     model.add(dropout1)
     model.add(Dense_1)
-    # model.add(dropout1)
+
     model.add(Dense_2)
-    # model.add(dropout1)
+ 
     model.add(Dense_4)
     k_cross_validate_model(train_x,train_y,5)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
@@ -187,15 +175,17 @@ def create_train_plots(training_losses):
     plt.title('Training Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.show()
+    plt.savefig('train_plot.png')
 
-def create_val_plots(validation_losses):
-    z = [i for i in range(len(validation_losses))]
-    plt.plot(z, validation_losses)
-    plt.title('Validation Loss per epoch')
+def create_val_plots(training_losses,validation_losses):
+    z = [i for i in range(len(validation_losses[0]))]
+    for k in range(len(validation_losses)):
+        plt.plot(z, training_losses[k],label="train_loss_fold"+str(k))
+        plt.plot(z, validation_losses[k],label="val_loss_fold"+str(k))
+    plt.title('Cross Fold Validation Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.show()
+    plt.savefig('val_plot.png')
 
 def main():
         # Keys to npzfile of train & eval

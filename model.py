@@ -59,8 +59,8 @@ def k_cross_validate_model(train_x, train_y, k):
         lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
         dropout1 = tf.keras.layers.Dropout(0.5)
-        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
-        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.01))
+        Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.01))
         Dense_4 = tf.keras.layers.Dense(1,activation=None)
         model.add(layer_1)
         model.add(batch_norm_1)
@@ -70,9 +70,9 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(batch_norm_2)
         model.add(max_pool_2)
 
-        # model.add(layer_3)
-        # model.add(batch_norm_3)
-        # model.add(max_pool_3)
+        model.add(layer_3)
+        model.add(batch_norm_3)
+        model.add(max_pool_3)
 
         model.add(flatten)
         # model.add(lstm)
@@ -115,8 +115,8 @@ def train_model(train_x, train_y):
     lstm = tf.keras.layers.LSTM(200, return_sequences=True)
 
     dropout1 = tf.keras.layers.Dropout(0.5)
-    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_1 = tf.keras.layers.Dense(625,activation=tf.keras.layers.LeakyReLU(0.01))
+    Dense_2 = tf.keras.layers.Dense(125,activation=tf.keras.layers.LeakyReLU(0.01))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     model.add(batch_norm_1)
@@ -130,9 +130,9 @@ def train_model(train_x, train_y):
     # model.add(batch_norm_n)
     # model.add(max_pool_n)
 
-    # model.add(layer_3)
-    # model.add(batch_norm_3)
-    # model.add(max_pool_3)
+    model.add(layer_3)
+    model.add(batch_norm_3)
+    model.add(max_pool_3)
 
     model.add(flatten)
     # model.add(lstm)

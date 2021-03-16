@@ -179,6 +179,36 @@ def generate_csv(eval_preds,eval_cells,eval_data):
 
     submit_df.to_csv('../sample_submission.csv', header=True, index=False, index_label=False)
 
+def create_train_plots(training_losses, training_accuracies):
+    x = [i for i in range(len(training_losses))]
+    plt.plot(x, training_losses)
+    plt.title('Training Loss per epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.show()
+
+    y = [i for i in range(len(training_accuracies))]
+    plt.plot(y, training_accuracies)
+    plt.title('Training Accuracy per epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.show()
+
+def create_val_plots(validation_losses, validation_accuracies):
+    z = [i for i in range(len(validation_losses))]
+    plt.plot(z, validation_losses)
+    plt.title('Validation Loss per epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.show()
+
+    z1 = [i for i in range(len(validation_accuracies))]
+    plt.plot(z1, validation_accuracies)
+    plt.title('Validation Accuracy per epoch')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.show()
+
 def main():
         # Keys to npzfile of train & eval
     train_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E105', 'E011', 'E106', 'E082', 'E097', 'E116', 'E098', 'E058', 

@@ -76,13 +76,13 @@ def k_cross_validate_model(train_x, train_y, k):
 
         model.add(flatten)
 
-        model.add(dropout1)
+        # model.add(dropout1)
         model.add(Dense_1)
 
         model.add(Dense_2)
     
         model.add(Dense_4)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
         history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
         val_loss.append(history.history["val_loss"])
         train_loss.append(history.history["loss"])
@@ -127,14 +127,14 @@ def train_model(train_x, train_y):
 
     model.add(flatten)
 
-    model.add(dropout1)
+    # model.add(dropout1)
     model.add(Dense_1)
 
     model.add(Dense_2)
  
     model.add(Dense_4)
     # k_cross_validate_model(train_x,train_y,4)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
     history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
     model.summary()
     create_train_plots(history.history["loss"])

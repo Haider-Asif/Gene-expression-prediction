@@ -121,9 +121,9 @@ def train_model(train_x, train_y):
     model.add(batch_norm_2)
     model.add(max_pool_2)
 
-    # model.add(layer_3)
-    # model.add(batch_norm_3)
-    # model.add(max_pool_3)
+    model.add(layer_3)
+    model.add(batch_norm_3)
+    model.add(max_pool_3)
 
     model.add(flatten)
 

@@ -54,7 +54,7 @@ def k_cross_validate_model(train_x, train_y, k):
         max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
         layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-        batch_norm_3 = tf.keras.layers.BatchNormalization(scale=False)
+        batch_norm_3 = tf.keras.layers.BatchNormalization()
         max_pool_3 = tf.keras.layers.MaxPool1D(5)
 
         bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(25, activation='relu', return_sequences=True))
@@ -102,16 +102,16 @@ def train_model(train_x, train_y):
     return: a trained model
     """
     model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+    layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="VALID")
     batch_norm_1 = tf.keras.layers.BatchNormalization()
     max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
+    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="VALID", dilation_rate=3)
     batch_norm_2 = tf.keras.layers.BatchNormalization()
     max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
-    layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-    batch_norm_3 = tf.keras.layers.BatchNormalization(scale=False)
+    layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="VALID", dilation_rate=2)
+    batch_norm_3 = tf.keras.layers.BatchNormalization()
     max_pool_3 = tf.keras.layers.MaxPool1D(5)
 
     bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(25, activation='relu', return_sequences=True))

@@ -55,9 +55,9 @@ def k_cross_validate_model(train_x, train_y, k):
 
         layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
         batch_norm_3 = tf.keras.layers.BatchNormalization(scale=False)
-        max_pool_3 = tf.keras.layers.MaxPool1D(2)
+        max_pool_3 = tf.keras.layers.MaxPool1D(5)
 
-        bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(50, activation='relu', return_sequences=True))
+        bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(25, activation='relu', return_sequences=True))
 
         flatten = tf.keras.layers.Flatten()
 
@@ -88,7 +88,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(Dense_2)
     
         model.add(Dense_4)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=tf.keras.losses.MeanSquaredError())
         history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
         val_loss.append(history.history["val_loss"])
         train_loss.append(history.history["loss"])
@@ -112,9 +112,9 @@ def train_model(train_x, train_y):
 
     layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
     batch_norm_3 = tf.keras.layers.BatchNormalization(scale=False)
-    max_pool_3 = tf.keras.layers.MaxPool1D(2)
+    max_pool_3 = tf.keras.layers.MaxPool1D(5)
 
-    bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(50, activation='relu', return_sequences=True))
+    bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(25, activation='relu', return_sequences=True))
 
     flatten = tf.keras.layers.Flatten()
 
@@ -147,9 +147,9 @@ def train_model(train_x, train_y):
     model.add(Dense_4)
 
     k_cross_validate_model(train_x,train_y,4)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-    model.summary()
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss=tf.keras.losses.MeanSquaredError())
     history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
+    model.summary()
     create_train_plots(history.history["loss"])
     return model
 
@@ -198,8 +198,8 @@ def create_train_plots(training_losses):
 def create_val_plots(training_losses,validation_losses):
     z = [i for i in range(len(validation_losses[0]))]
     for k in range(len(validation_losses)):
-        plt.plot(z, training_losses[k],label="train_loss_fold"+str(k))
-        plt.plot(z, validation_losses[k],label="val_loss_fold"+str(k))
+        plt.plot(z, training_losses[k],label="train_loss_fold"+str(k+1))
+        plt.plot(z, validation_losses[k],label="val_loss_fold"+str(k+1))
     plt.title('Cross Fold Validation Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')

@@ -45,17 +45,20 @@ def k_cross_validate_model(train_x, train_y, k):
         training_y = np.concatenate((train_y[0:int(i*(1/k)*train_y.shape[0])],train_y[int((i+1)*(1/k)*train_y.shape[0]):train_y.shape[0]]), axis=0)
 
         model = tf.keras.Sequential()
-        layer_1 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         batch_norm_1 = tf.keras.layers.BatchNormalization()
-        max_pool_1 = tf.keras.layers.MaxPool1D(3)
+        max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
         layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
         batch_norm_2 = tf.keras.layers.BatchNormalization()
         max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
         layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-        batch_norm_3 = tf.keras.layers.BatchNormalization()
-        max_pool_3 = tf.keras.layers.MaxPool1D(5)
+        batch_norm_3 = tf.keras.layers.BatchNormalization(scale=False)
+        max_pool_3 = tf.keras.layers.MaxPool1D(2)
+
+        bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(50, activation='relu', return_sequences=True))
+
         flatten = tf.keras.layers.Flatten()
 
         dropout1 = tf.keras.layers.Dropout(0.5)
@@ -74,15 +77,18 @@ def k_cross_validate_model(train_x, train_y, k):
         model.add(batch_norm_3)
         model.add(max_pool_3)
 
+        model.add(bigru)
+
         model.add(flatten)
 
         model.add(dropout1)
+
         model.add(Dense_1)
 
         model.add(Dense_2)
     
         model.add(Dense_4)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
         history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
         val_loss.append(history.history["val_loss"])
         train_loss.append(history.history["loss"])
@@ -105,8 +111,11 @@ def train_model(train_x, train_y):
     max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
     layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-    batch_norm_3 = tf.keras.layers.BatchNormalization()
-    max_pool_3 = tf.keras.layers.MaxPool1D(5)
+    batch_norm_3 = tf.keras.layers.BatchNormalization(scale=False)
+    max_pool_3 = tf.keras.layers.MaxPool1D(2)
+
+    bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(50, activation='relu', return_sequences=True))
+
     flatten = tf.keras.layers.Flatten()
 
     dropout1 = tf.keras.layers.Dropout(0.5)
@@ -125,20 +134,25 @@ def train_model(train_x, train_y):
     model.add(batch_norm_3)
     model.add(max_pool_3)
 
+    model.add(bigru)
+
     model.add(flatten)
 
     model.add(dropout1)
+
     model.add(Dense_1)
 
     model.add(Dense_2)
  
     model.add(Dense_4)
-    # k_cross_validate_model(train_x,train_y,4)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss=tf.keras.losses.MeanSquaredError())
-    history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
+
+    k_cross_validate_model(train_x,train_y,4)
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
     model.summary()
+    history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=20,shuffle=True)
     create_train_plots(history.history["loss"])
     return model
+
 
 def make_prediction(model, input_data):
     """

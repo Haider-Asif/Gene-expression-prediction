@@ -115,7 +115,7 @@ def train_model(train_x, train_y):
     max_pool_3 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
 
-    dropout1 = tf.keras.layers.Dropout(0.5)
+    dropout1 = tf.keras.layers.Dropout(0.3)
     Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
@@ -133,7 +133,7 @@ def train_model(train_x, train_y):
 
     model.add(flatten)
 
-    # model.add(dropout1)
+    model.add(dropout1)
     model.add(Dense_1)
 
     model.add(Dense_2)
@@ -141,7 +141,7 @@ def train_model(train_x, train_y):
     model.add(Dense_4)
     # k_cross_validate_model(train_x,train_y,4)
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-    history = model.fit(x=train_x, y=train_y, batch_size=50, epochs=15,shuffle=True)
+    history = model.fit(x=train_x, y=train_y, batch_size=100, epochs=15,shuffle=True)
     model.summary()
     create_train_plots(history.history["loss"])
     return model

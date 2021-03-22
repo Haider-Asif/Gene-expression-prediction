@@ -115,9 +115,9 @@ def train_model(train_x, train_y):
     max_pool_3 = tf.keras.layers.MaxPool1D(3)
     flatten = tf.keras.layers.Flatten()
 
-    dropout1 = tf.keras.layers.Dropout(0.5)
-    Dense_1 = tf.keras.layers.Dense(600,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_2 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
+    dropout1 = tf.keras.layers.Dropout(0.3)
+    Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
+    Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
     Dense_4 = tf.keras.layers.Dense(1,activation=None)
     model.add(layer_1)
     # model.add(batch_norm_1)

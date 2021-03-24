@@ -200,7 +200,7 @@ def generate_csv(eval_preds,eval_cells,eval_data):
     df_data = {'id': id_column, 'expression' : example_eval_preds}
     submit_df = pd.DataFrame(data=df_data)
 
-    submit_df.to_csv('../sample_submission.csv', header=True, index=False, index_label=False)
+    submit_df.to_csv('../results/sample_submission.csv', header=True, index=False, index_label=False)
 
 def create_train_plots(training_losses):
     """

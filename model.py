@@ -5,6 +5,8 @@ from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
 
+# Method to get the data from the npz file stored in the directo
+
 def get_data(train_cells,eval_cells):
     # Load data
     train_data = np.load('../train.npz')
@@ -52,11 +54,11 @@ def k_cross_validate_model(train_x, train_y, k):
         max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
         layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-        max_pool_3 = tf.keras.layers.MaxPool1D(5)
+        max_pool_3 = tf.keras.layers.MaxPool1D(3)
 
         flatten = tf.keras.layers.Flatten()
 
-        dropout1 = tf.keras.layers.Dropout(0.5)
+        dropout1 = tf.keras.layers.Dropout(0.3)
         Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
         Dense_3 = tf.keras.layers.Dense(1,activation=None)
@@ -79,7 +81,7 @@ def k_cross_validate_model(train_x, train_y, k):
     
         model.add(Dense_3)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-        history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=20, validation_data=(validation_x,validation_y), shuffle=True)
+        history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=15, validation_data=(validation_x,validation_y), shuffle=True)
         val_loss.append(history.history["val_loss"])
         train_loss.append(history.history["loss"])
     create_val_plots(train_loss,val_loss)
@@ -99,8 +101,8 @@ def train_model(train_x, train_y):
     max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
     layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-    max_pool_3 = tf.keras.layers.MaxPool1D(5)
-    
+    max_pool_3 = tf.keras.layers.MaxPool1D(3)
+
     flatten = tf.keras.layers.Flatten()
 
     dropout1 = tf.keras.layers.Dropout(0.3)

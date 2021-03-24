@@ -207,8 +207,8 @@ def create_train_plots(training_losses):
     method to create a plot for just the training loss per epoch
     @param training_losses - array of training losses (1 entry per epoch)
     """
-
     x = [i for i in range(len(training_losses))]
+    plt.clf()
     plt.plot(x, training_losses)
     plt.title('Training Loss per epoch')
     plt.xlabel('Epoch')

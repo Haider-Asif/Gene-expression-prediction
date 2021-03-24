@@ -8,6 +8,8 @@ To build the appropriate setup to run the code, please follow these steps:
 2) Drag and drop the train.npz and the eval.npz files into the data directory
 3) To make sure that the zip file is not pushed please don't add it to the git directory, .npz files will automatically be ignored.
 
+As a final check - make sure before you run you are in the code directory, and the .npz files are properly placed in the data directory!
+
 # How to run the model
 
 To run the model please navigate into the code directory of the repository and open a terminal. Inside the terminal please run the following command:

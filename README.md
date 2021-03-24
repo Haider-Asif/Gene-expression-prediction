@@ -17,3 +17,7 @@ To run the model please navigate into the code directory of the repository and o
 python3 model.py
 
 This will run the model which will start with k-fold validation and then move on to training the model properly, it will then calculate the pearons' correlation coefficent for the training predictions and labels, and will also calculate the final average MSE. It will then plot the train, and k-cross validation curves, and generate the csv required for the kaggle submission.
+
+# Results
+
+Our code will generate three outputs: the first (val_plot.png) is a graph showing the training and validation losses across the epochs for k-fold cross validation, the second is a graph (train_plot.png) showing the training loss when fully training the model with 100% of the training data, and the third (sample_submission.csv) is a CSV with the predicted values. These outputs will be saved in the results directory.

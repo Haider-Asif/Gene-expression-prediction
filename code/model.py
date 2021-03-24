@@ -14,8 +14,8 @@ def get_data(train_cells,eval_cells):
     """
 
     # Load data
-    train_data = np.load('../train.npz')
-    eval_data = np.load('../eval.npz')
+    train_data = np.load('../data/train.npz')
+    eval_data = np.load('../data/eval.npz')
 
     # Combine Train Data to use information from all cells
     train_inputs = [] # Input histone mark data

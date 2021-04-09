@@ -424,11 +424,31 @@ def main():
     model = COMBmodel()
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
-    batch_size = 250
+    batch_size = 100
     num_epochs = 20
 
     for e in range(num_epochs):
-        loss = train(model, optimizer, batch_size, train_hm_inputs, train_genes, seq_dict, train_expression_vals)
+        loss_list = []
+        num_examples = np.shape(train_hm_inputs)[0]
+        range_indicies = range(0, num_examples)
+        shuffled_indicies = tf.random.shuffle(range_indicies)
+        train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
+        train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
+        train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
+        for i in range(0, num_examples, batch_size):
+            batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
+            batch_genes = train_genes[i:i+batch_size]
+            batch_onehot = [seq_dict[x] for x in batch_genes]
+            batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
+            batch_exp_vals = train_expression_vals[i:i+batch_size]
+            with tf.GradientTape() as tape:
+                output = model.call(batch_hm_inputs, batch_onehot_inputs)
+                loss = model.loss(output, batch_exp_vals)
+                loss_list.append(loss)
+                gradients = tape.gradient(loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        loss = np.mean(loss_list)
+        # loss = train(model, optimizer, batch_size, train_hm_inputs, train_genes, seq_dict, train_expression_vals)
         print('epoch ' + str(e) + ': loss ' + str(loss))
 
     # Call remove_borders() to properly modify the training labels

@@ -11,11 +11,25 @@ def one_hot_encoding(seq_array):
     :return: np array of one-hot encodings of input DNA sequences
     """
     nuc2id = {'A' : 0, 'C' : 1, 'T' : 2, 'G' : 3}
-    onehot_array = np.zeros((len(seq_array), 4, 10000))
+    onehot_array = np.zeros((len(seq_array), 10000, 4))
     for seq_num, seq in enumerate(seq_array):
         for seq_idx, nucleotide in enumerate(seq):
             nuc_idx = nuc2id[nucleotide]
-            onehot_array[seq_num, nuc_idx, seq_idx] = 1
+            onehot_array[seq_num, seq_idx, nuc_idx] = 1
+    
+    return onehot_array
+
+
+def gene_one_hot_encoding(single_seq):
+    """
+    :param single_seq: single DNA sequence
+    :return: np array of one-hot encoding of input DNA sequence
+    """
+    nuc2id = {'A' : 0, 'C' : 1, 'T' : 2, 'G' : 3}
+    onehot_array = np.zeros((1, 10000, 4))
+    for seq_idx, nucleotide in enumerate(single_seq):
+        nuc_idx = nuc2id[nucleotide]
+        onehot_array[0, seq_idx, nuc_idx] = 1
     
     return onehot_array
 
@@ -38,14 +52,21 @@ def get_data(train_cells,eval_cells):
     train_inputs = [] # Input histone mark data
     train_outputs = [] # Correct expression value
     train_seqs = []
-    for cell in train_cells:
+    gene2seq = {}
+    for num, cell in enumerate(train_cells):
         print(cell)
         cell_data = train_data[cell]
         hm_data = cell_data[:,:,1:6]
         exp_values = cell_data[:,0,6]
-        gene_ids = cell_data[:,0,0]
-        cell_seqs = seq_data[seq_data['gene_id'].isin(gene_ids)]['sequence'].tolist()
-        train_seqs.append(cell_seqs)
+        # gene_ids = cell_data[:,0,0]
+        # cell_seqs = seq_data[seq_data['gene_id'].isin(gene_ids)]['sequence'].tolist()
+        # train_seqs.append(cell_seqs[:2])
+        if num == 0:
+            for gene in cell_data[:,0,0]:
+                rowgene = seq_data.loc[seq_data['gene_id'] == gene]
+                gene_seq = rowgene['sequence'].values[0]
+                onehot_gene_seq = gene_one_hot_encoding(gene_seq)
+                gene2seq[gene] = onehot_gene_seq
         # for gene in cell_data[:,0,0]:
             # rowgene = seq_data.loc[seq_data['gene_id'] == gene]
             # ind_seq = rowgene['sequence'].values[0]
@@ -57,10 +78,12 @@ def get_data(train_cells,eval_cells):
     print(np.shape(train_inputs))
     train_outputs = np.concatenate(train_outputs, axis=0)
     print(np.shape(train_outputs))
-    train_seqs = np.concatenate(train_seqs, axis=0)
-    print(np.shape(train_seqs))
-    train_seqs = one_hot_encoding(train_seqs)
-    print(np.shape(train_seqs))
+    print(len(gene2seq))
+    print(np.shape(gene2seq[5]))
+    # train_seqs = np.concatenate(train_seqs, axis=0)
+    # print(np.shape(train_seqs))
+    # train_seqs = one_hot_encoding(train_seqs)
+    # print(np.shape(train_seqs))
 
 
     # Prepare Eval inputs in similar way

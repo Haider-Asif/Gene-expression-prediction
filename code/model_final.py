@@ -436,6 +436,7 @@ def main():
         train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
         train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
         for i in range(0, num_examples, batch_size):
+            print(i)
             batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
             batch_genes = train_genes[i:i+batch_size]
             batch_onehot = [seq_dict[x] for x in batch_genes]

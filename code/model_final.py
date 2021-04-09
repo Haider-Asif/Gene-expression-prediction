@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
+tf.compat.v1.disable_eager_execution()
 
 def one_hot_encoding(seq_array):
     """

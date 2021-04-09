@@ -188,12 +188,12 @@ def train(model, optimizer, batch_size, hm_training, gene_training, seq_dict, ex
     range_indicies = range(0, num_examples)
     shuffled_indicies = tf.random.shuffle(range_indicies)
     shuffled_hm_inputs = tf.gather(hm_training, shuffled_indicies)
-    shuffled_genes = tf.gather(hm_training, shuffled_indicies)
+    shuffled_genes = tf.gather(hm_training, shuffled_indicies).numpy().tolist()
     shuffled_expression_vals = tf.gather(expression_vals, shuffled_indicies)
     for i in range(0, num_examples, batch_size):
         batch_hm_inputs = shuffled_hm_inputs[i:i+batch_size,:,:]
         batch_genes = shuffled_genes[i:i+batch_size]
-        batch_onehot = [seq_dict[x] for x in batch_genes.numpy()]
+        batch_onehot = [seq_dict[x] for x in batch_genes]
         batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
         batch_exp_vals = shuffled_expression_vals[i:i+batch_size]
         with tf.GradientTape() as tape:

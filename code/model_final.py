@@ -43,9 +43,9 @@ def get_data(train_cells,eval_cells):
     """
 
     # Load data
-    train_data = np.load('../../train.npz')
-    eval_data = np.load('../../eval.npz')
-    seq_data = pd.read_csv('../../seq_data.csv', names=['gene_id', 'sequence'])
+    train_data = np.load('../data/train.npz')
+    eval_data = np.load('../data/eval.npz')
+    seq_data = pd.read_csv('../data/seq_data.csv', names=['gene_id', 'sequence'])
 
 
     # Combine Train Data to use information from all cells

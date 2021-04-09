@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
-tf.compat.v1.disable_eager_execution()
 
 def one_hot_encoding(seq_array):
     """
@@ -194,7 +193,7 @@ def train(model, optimizer, batch_size, hm_training, gene_training, seq_dict, ex
     for i in range(0, num_examples, batch_size):
         batch_hm_inputs = shuffled_hm_inputs[i:i+batch_size,:,:]
         batch_genes = shuffled_genes[i:i+batch_size]
-        batch_onehot = [seq_dict[x] for x in batch_genes]
+        batch_onehot = [seq_dict[x] for x in batch_genes.numpy()]
         batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
         batch_exp_vals = shuffled_expression_vals[i:i+batch_size]
         with tf.GradientTape() as tape:

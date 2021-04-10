@@ -469,9 +469,16 @@ def main():
     # model = train_model(train_x,train_y)
 
     # Call make_prediction to generate predictions for raining and eval sets
-    eval_onehot = [seq_dict[x].astype('int32') for x in eval_genes]
-    eval_onehot_inputs = np.concatenate(eval_onehot, axis=0)
-    test_prediction = make_prediction(model, eval_hm_inputs, eval_onehot_inputs)
+    num_examples = len(eval_genes)
+    test_predictions = []
+    for i in range(0, num_examples, batch_size):
+        eval_genes_batch = eval_genes[i:i+batch_size]
+        eval_onehot = [seq_dict[x] for x in eval_genes_batch]
+        eval_onehot_batch = np.concatenate(eval_onehot, axis=0)
+        eval_hm_batch = eval_hm_inputs[i:i+batch_size]
+        preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
+        test_predictions.append(preds)
+    test_predictions = [item for sublist in test_predictions for item in sublist]
 
     # train_prediction = make_prediction(model,train_x)
 

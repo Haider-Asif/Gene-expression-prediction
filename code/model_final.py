@@ -175,7 +175,8 @@ class COMBmodel(tf.keras.Model):
         self.dense_3 = tf.keras.layers.Dense(1,activation=None)
 
     
-    def call(self, hm_batch, seq_batch):
+    def call(self, inputs):
+        hm_batch, seq_batch = inputs
         hm_flat = self.hm_model(hm_batch)
         hm_drop = self.dropout1(hm_flat)
         seq_flat = self.seq_model(seq_batch)
@@ -350,7 +351,7 @@ def make_prediction(model, eval_inputs, eval_genes):
     @return - returns the model predictions
     """ 
 
-    return model.call(eval_inputs, eval_genes)
+    return model.predict((eval_inputs, eval_genes))
         
 def evaluation_metrics(prediction, train_y):
     """
@@ -453,7 +454,7 @@ def main():
             batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
             batch_exp_vals = train_expression_vals[i:i+batch_size]
             with tf.GradientTape() as tape:
-                output = model.call(batch_hm_inputs, batch_onehot_inputs)
+                output = model.call((batch_hm_inputs, batch_onehot_inputs))
                 loss = model.loss(output, batch_exp_vals)
                 loss_list.append(loss)
                 gradients = tape.gradient(loss, model.trainable_variables)
@@ -478,7 +479,8 @@ def main():
         eval_hm_batch = eval_hm_inputs[i:i+batch_size]
         preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
         test_predictions.append(preds)
-    test_prediction = [item for sublist in test_predictions for item in sublist]
+    test_prediction = np.asarray(test_predictions)
+    # test_prediction = [item for sublist in test_predictions for item in sublist]
 
     # train_prediction = make_prediction(model,train_x)
 

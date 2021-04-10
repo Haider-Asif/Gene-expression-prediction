@@ -163,7 +163,7 @@ class COMBmodel(tf.keras.Model):
         self.seq_model = SEQmodel()
 
         self.dropout1 = tf.keras.layers.Dropout(0.3)
-        self.dropout1 = tf.keras.layers.Dropout(0.2)
+        self.dropout2 = tf.keras.layers.Dropout(0.2)
         self.dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_3 = tf.keras.layers.Dense(1,activation=None)

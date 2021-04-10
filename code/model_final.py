@@ -350,7 +350,7 @@ def make_prediction(model, eval_inputs, eval_genes):
     @return - returns the model predictions
     """ 
 
-    return model.predict(eval_inputs, eval_genes)
+    return model.call(eval_inputs, eval_genes)
         
 def evaluation_metrics(prediction, train_y):
     """
@@ -478,7 +478,7 @@ def main():
         eval_hm_batch = eval_hm_inputs[i:i+batch_size]
         preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
         test_predictions.append(preds)
-    test_predictions = [item for sublist in test_predictions for item in sublist]
+    test_prediction = [item for sublist in test_predictions for item in sublist]
 
     # train_prediction = make_prediction(model,train_x)
 

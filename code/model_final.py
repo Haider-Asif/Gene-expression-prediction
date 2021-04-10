@@ -91,14 +91,17 @@ def get_data(train_cells,eval_cells):
 
     # Prepare Eval inputs in similar way
     eval_inputs = []
+    eval_genes = []
     for cell in eval_cells:
         cell_data = eval_data[cell]
         hm_data = cell_data[:,:,1:6]
         eval_inputs.append(hm_data)
+        for gene in cell_data[:,0,0]:
+            eval_genes.append(gene)
 
     eval_inputs = np.concatenate(eval_inputs, axis=0)
 
-    return train_inputs, train_genes, gene2seq, train_outputs, eval_inputs, eval_data
+    return train_inputs, train_genes, gene2seq, train_outputs, eval_inputs, eval_genes, eval_data
 
 
 # Define Models
@@ -160,6 +163,7 @@ class COMBmodel(tf.keras.Model):
         self.seq_model = SEQmodel()
 
         self.dropout1 = tf.keras.layers.Dropout(0.3)
+        self.dropout1 = tf.keras.layers.Dropout(0.2)
         self.dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_3 = tf.keras.layers.Dense(1,activation=None)
@@ -169,7 +173,7 @@ class COMBmodel(tf.keras.Model):
         hm_flat = self.hm_model(hm_batch)
         hm_drop = self.dropout1(hm_flat)
         seq_flat = self.seq_model(seq_batch)
-        seq_drop = self.dropout1(seq_flat)
+        seq_drop = self.dropout2(seq_flat)
         combined = tf.keras.layers.concatenate([hm_drop, seq_drop])
         fully_con1 = self.dense_1(combined)
         fully_con2 = self.dense_2(fully_con1)
@@ -332,7 +336,7 @@ def train_model(train_x, train_y):
     create_train_plots(history.history["loss"])
     return model
 
-def make_prediction(model, input_data):
+def make_prediction(model, eval_inputs, eval_genes):
     """
     method to make predictions from the model based on the input data
     @param model - a tf.keras.Sequential model
@@ -340,7 +344,7 @@ def make_prediction(model, input_data):
     @return - returns the model predictions
     """ 
 
-    return model.predict(input_data)
+    return model.predict(eval_inputs, eval_genes)
         
 def evaluation_metrics(prediction, train_y):
     """
@@ -419,13 +423,13 @@ def main():
     eval_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E071', 'E105', 'E087', 'E011', 'E106', 'E096', 'E082', 'E097', 
     'E116', 'E098', 'E058', 'E117', 'E084', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E112', 'E127', 'E047', 'E094', 'E007', 'E054', 'E113', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
     # Call get_data() to read in all of the data
-    train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_inputs, eval_data = get_data(train_cells,eval_cells)
+    train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
 
     model = COMBmodel()
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
     batch_size = 100
-    num_epochs = 20
+    num_epochs = 2
 
     for e in range(num_epochs):
         loss_list = []
@@ -436,7 +440,7 @@ def main():
         train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
         train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
         for i in range(0, num_examples, batch_size):
-            print(i)
+            # print(i)
             batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
             batch_genes = train_genes[i:i+batch_size]
             batch_onehot = [seq_dict[x] for x in batch_genes]
@@ -455,8 +459,11 @@ def main():
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model
     # model = train_model(train_x,train_y)
-    # # Call make_prediction to generate predictions for raining and eval sets
-    # test_prediction = make_prediction(model, test_x)
+
+    # Call make_prediction to generate predictions for raining and eval sets
+    eval_onehot = [seq_dict[x] for x in eval_genes]
+    eval_onehot_inputs = np.concatenate(eval_onehot, axis=0)
+    test_prediction = make_prediction(model, eval_hm_inputs, eval_onehot_inputs)
 
     # train_prediction = make_prediction(model,train_x)
 
@@ -465,8 +472,8 @@ def main():
     # print("Pearsons correlation co-efficent: ", pearsons)
     # print("Average final Mean squared error loss: ",loss)
 
-    # # Call generate csv to submit the csv to kaggle
-    # generate_csv(test_prediction.flatten(), eval_cells, test_data)
+    # Call generate csv to submit the csv to kaggle
+    generate_csv(test_prediction.flatten(), eval_cells, eval_data)
 
 
 if __name__ == '__main__':

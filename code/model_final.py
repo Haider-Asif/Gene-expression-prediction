@@ -92,11 +92,17 @@ def get_data(train_cells,eval_cells):
     # Prepare Eval inputs in similar way
     eval_inputs = []
     eval_genes = []
-    for cell in eval_cells:
+    for num, cell in enumerate(eval_cells):
+        print(cell)
         cell_data = eval_data[cell]
         hm_data = cell_data[:,:,1:6]
         eval_inputs.append(hm_data)
         for gene in cell_data[:,0,0]:
+            if num == 0:
+                rowgene = seq_data.loc[seq_data['gene_id'] == gene]
+                gene_seq = rowgene['sequence'].values[0]
+                onehot_gene_seq = gene_one_hot_encoding(gene_seq)
+                gene2seq[gene] = onehot_gene_seq
             eval_genes.append(gene)
 
     eval_inputs = np.concatenate(eval_inputs, axis=0)

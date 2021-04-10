@@ -452,16 +452,18 @@ def main():
                 loss_list.append(loss)
                 gradients = tape.gradient(loss, model.trainable_variables)
                 optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+            break
         loss = np.mean(loss_list)
         # loss = train(model, optimizer, batch_size, train_hm_inputs, train_genes, seq_dict, train_expression_vals)
         print('epoch ' + str(e) + ': loss ' + str(loss))
+        break
 
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model
     # model = train_model(train_x,train_y)
 
     # Call make_prediction to generate predictions for raining and eval sets
-    eval_onehot = [seq_dict[x] for x in eval_genes]
+    eval_onehot = [seq_dict[int(x)] for x in eval_genes]
     eval_onehot_inputs = np.concatenate(eval_onehot, axis=0)
     test_prediction = make_prediction(model, eval_hm_inputs, eval_onehot_inputs)
 

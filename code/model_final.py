@@ -436,7 +436,7 @@ def main():
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
     batch_size = 100
-    num_epochs = 2
+    num_epochs = 15
 
     for e in range(num_epochs):
         loss_list = []
@@ -459,11 +459,9 @@ def main():
                 loss_list.append(loss)
                 gradients = tape.gradient(loss, model.trainable_variables)
                 optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-            break
         loss = np.mean(loss_list)
         # loss = train(model, optimizer, batch_size, train_hm_inputs, train_genes, seq_dict, train_expression_vals)
         print('epoch ' + str(e) + ': loss ' + str(loss))
-        break
 
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model

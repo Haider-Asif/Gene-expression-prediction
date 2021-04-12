@@ -187,7 +187,6 @@ class COMBmodel(tf.keras.Model):
     def __init__(self):
         super(COMBmodel, self).__init__()
 
-        self.autoencoder = Autoencoder(64)
         self.hm_model = HMmodel()
         self.seq_model = SEQmodel()
 
@@ -200,8 +199,7 @@ class COMBmodel(tf.keras.Model):
     
     def call(self, inputs):
         hm_batch, seq_batch = inputs
-        hm_up = self.autoencoder(hm_batch)
-        hm_flat = self.hm_model(hm_up)
+        hm_flat = self.hm_model(hm_batch)
         hm_drop = self.dropout1(hm_flat)
         seq_flat = self.seq_model(seq_batch)
         seq_drop = self.dropout2(seq_flat)
@@ -455,6 +453,12 @@ def main():
     'E116', 'E098', 'E058', 'E117', 'E084', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E112', 'E127', 'E047', 'E094', 'E007', 'E054', 'E113', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
     # Call get_data() to read in all of the data
     train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
+
+    autoencoder = Autoencoder(42)
+    autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
+    autoencoder.fit(train_hm_inputs, train_hm_inputs, batch_size=250, epochs=10, shuffle=True)
+
+    train_hm_inputs = autoencoder.predict(train_hm_inputs)
 
     model = COMBmodel()
     model.built = True

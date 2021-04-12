@@ -145,7 +145,7 @@ class SEQmodel(tf.keras.layers.Layer):
         super(SEQmodel, self).__init__()
         
         self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(30)
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(25)
 
         self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
         self.max_pool_2 = tf.keras.layers.MaxPool1D(10)

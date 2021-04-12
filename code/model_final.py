@@ -113,7 +113,7 @@ def get_data(train_cells,eval_cells):
 
 
 # Define Models
-class Autoencoder(tf.keras.layers.Layer):
+class Autoencoder(tf.keras.Model):
   def __init__(self, latent_dim):
     super(Autoencoder, self).__init__()
     self.latent_dim = latent_dim   
@@ -165,7 +165,7 @@ class SEQmodel(tf.keras.layers.Layer):
         super(SEQmodel, self).__init__()
         
         self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(40)
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(32)
 
         self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
         self.max_pool_2 = tf.keras.layers.MaxPool1D(10)

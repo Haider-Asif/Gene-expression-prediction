@@ -119,11 +119,11 @@ class Autoencoder(tf.keras.Model):
     self.latent_dim = latent_dim   
     self.encoder = tf.keras.Sequential([
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(186, activation='relu'),
+        tf.keras.layers.Dense(150, activation='relu'),
         tf.keras.layers.Dense(latent_dim, activation='relu'),
     ])
     self.decoder = tf.keras.Sequential([
-        tf.keras.layers.Dense(186, activation='relu'),
+        tf.keras.layers.Dense(150, activation='relu'),
         tf.keras.layers.Dense(500, activation='sigmoid'),
         tf.keras.layers.Reshape((100, 5))
     ])
@@ -454,7 +454,7 @@ def main():
     # Call get_data() to read in all of the data
     train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
 
-    autoencoder = Autoencoder(42)
+    autoencoder = Autoencoder(25)
     autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
     autoencoder.fit(train_hm_inputs, train_hm_inputs, batch_size=250, epochs=10, shuffle=True)
 

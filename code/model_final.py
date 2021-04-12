@@ -66,6 +66,7 @@ def get_data(train_cells,eval_cells):
             if num == 0:
                 rowgene = seq_data.loc[seq_data['gene_id'] == gene]
                 gene_seq = rowgene['sequence'].values[0]
+                gene_seq = gene_seq[3000:7000]
                 onehot_gene_seq = gene_one_hot_encoding(gene_seq)
                 gene2seq[gene] = onehot_gene_seq
             train_genes.append(gene)
@@ -101,6 +102,7 @@ def get_data(train_cells,eval_cells):
             if num == 0:
                 rowgene = seq_data.loc[seq_data['gene_id'] == gene]
                 gene_seq = rowgene['sequence'].values[0]
+                gene_seq = gene_seq[3000:7000]
                 onehot_gene_seq = gene_one_hot_encoding(gene_seq)
                 gene2seq[gene] = onehot_gene_seq
             eval_genes.append(gene)
@@ -168,8 +170,8 @@ class COMBmodel(tf.keras.Model):
         self.hm_model = HMmodel()
         self.seq_model = SEQmodel()
 
-        self.dropout1 = tf.keras.layers.Dropout(0.3)
-        self.dropout2 = tf.keras.layers.Dropout(0.2)
+        self.dropout1 = tf.keras.layers.Dropout(0.5)
+        self.dropout2 = tf.keras.layers.Dropout(0.5)
         self.dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_3 = tf.keras.layers.Dense(1,activation=None)
@@ -477,8 +479,7 @@ def main():
         eval_hm_batch = eval_hm_inputs[i:i+batch_size]
         preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
         test_predictions.append(preds)
-    test_prediction = np.asarray(test_predictions)
-    # test_prediction = [item for sublist in test_predictions for item in sublist]
+    test_prediction = np.asarray([item for sublist in test_predictions for item in sublist])
 
     # train_prediction = make_prediction(model,train_x)
 

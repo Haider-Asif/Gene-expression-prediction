@@ -113,6 +113,26 @@ def get_data(train_cells,eval_cells):
 
 
 # Define Models
+class Autoencoder(tf.keras.layers.Layer):
+  def __init__(self, latent_dim):
+    super(Autoencoder, self).__init__()
+    self.latent_dim = latent_dim   
+    self.encoder = tf.keras.Sequential([
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(186, activation='relu'),
+        tf.keras.layers.Dense(latent_dim, activation='relu'),
+    ])
+    self.decoder = tf.keras.Sequential([
+        tf.keras.layers.Dense(186, activation='relu'),
+        tf.keras.layers.Dense(500, activation='sigmoid'),
+        tf.keras.layers.Reshape((100, 5))
+    ])
+
+  def call(self, x):
+    encoded = self.encoder(x)
+    decoded = self.decoder(encoded)
+    return decoded
+
 class HMmodel(tf.keras.layers.Layer):
     def __init__(self):
         super(HMmodel, self).__init__()
@@ -145,7 +165,7 @@ class SEQmodel(tf.keras.layers.Layer):
         super(SEQmodel, self).__init__()
         
         self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(25)
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(40)
 
         self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
         self.max_pool_2 = tf.keras.layers.MaxPool1D(10)
@@ -167,6 +187,7 @@ class COMBmodel(tf.keras.Model):
     def __init__(self):
         super(COMBmodel, self).__init__()
 
+        self.autoencoder = Autoencoder(64)
         self.hm_model = HMmodel()
         self.seq_model = SEQmodel()
 
@@ -179,7 +200,8 @@ class COMBmodel(tf.keras.Model):
     
     def call(self, inputs):
         hm_batch, seq_batch = inputs
-        hm_flat = self.hm_model(hm_batch)
+        hm_up = self.autoencoder(hm_batch)
+        hm_flat = self.hm_model(hm_up)
         hm_drop = self.dropout1(hm_flat)
         seq_flat = self.seq_model(seq_batch)
         seq_drop = self.dropout2(seq_flat)

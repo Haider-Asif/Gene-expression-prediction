@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
+from tensorflow.python.keras.backend import dtype
 # tf.keras.backend.set_floatx('float64')
 
 def one_hot_encoding(seq_array):
@@ -124,9 +125,9 @@ class Autoencoder(tf.keras.Model):
     return decoded
 
 
-class HMmodel(tf.keras.layers.Layer(dtype='float32')):
+class HMmodel(tf.keras.layers.Layer):
     def __init__(self,training):
-        super(HMmodel, self).__init__()
+        super(HMmodel, self).__init__(dtype="float32")
 
         self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", trainable=training)
         self.max_pool_1 = tf.keras.layers.MaxPool1D(5, trainable=training)
@@ -152,9 +153,9 @@ class HMmodel(tf.keras.layers.Layer(dtype='float32')):
         return flat
 
 
-class SEQmodel(tf.keras.layers.Layer(dtype='float64')):
+class SEQmodel(tf.keras.layers.Layer):
     def __init__(self, training):
-        super(SEQmodel, self).__init__()
+        super(SEQmodel, self).__init__(dtype="float64")
         
         self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME", trainable=training)
         self.max_pool_1 = tf.keras.layers.MaxPool1D(32, trainable=training)

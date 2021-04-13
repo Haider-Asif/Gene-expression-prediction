@@ -139,7 +139,7 @@ class HMmodel(tf.keras.layers.Layer):
         self.flatten = tf.keras.layers.Flatten()
 
 
-    @tf.function
+    # @tf.function
     def call(self, hm_batch):
         conv_1 = self.layer_1(hm_batch)
         mp_1 = self.max_pool_1(conv_1)
@@ -164,7 +164,7 @@ class SEQmodel(tf.keras.layers.Layer):
         self.flatten = tf.keras.layers.Flatten()
 
 
-    @tf.function
+    # @tf.function
     def call(self, seq_batch):
         conv_1 = self.layer_1(seq_batch,)
         mp_1 = self.max_pool_1(conv_1)
@@ -376,12 +376,17 @@ def k_cross_validate_model(train_x, train_y, k):
 
         for e in range(num_epochs):
             loss_list = []
-            num_examples = np.shape(train_hm_inputs)[0]
+            num_examples = np.shape(training_hm)[0]
             range_indicies = range(0, num_examples)
             shuffled_indicies = tf.random.shuffle(range_indicies)
-            train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
-            train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
-            train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
+            train_hm_inputs = tf.gather(training_hm, shuffled_indicies)
+            train_genes = tf.gather(training_gene, shuffled_indicies).numpy().tolist()
+            train_expression_vals = tf.gather(training_exp, shuffled_indicies)
+            val_hm_inputs = tf.gather(validation_hm, shuffled_indicies)
+            val_genes = tf.gather(validation_genes, shuffled_indicies).numpy().tolist()
+            val_expression_vals = tf.gather(validation_exp, shuffled_indicies)
+            val_onehot = [seq_dict[x] for x in val_genes]
+            val_onehot_inputs = np.concatenate(val_onehot, axis=0)
             for i in range(0, num_examples, batch_size):
                 # print(i)
                 batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
@@ -397,64 +402,20 @@ def k_cross_validate_model(train_x, train_y, k):
                     loss_list.append(loss)
                     gradients = tape.gradient(loss, model.trainable_variables)
                     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-            
             loss = np.mean(loss_list)
-            print('epoch ' + str(e) + ': loss ' + str(loss))
+            print('epoch ' + str(e) + ': training loss ' + str(loss))
+            
+            val_preds = model.predict(val_hm_inputs, val_onehot_inputs)
+            val_loss = model.loss(val_preds, val_expression_vals)
+            print('epoch ' + str(e) + ': validation loss ' + str(val_loss))
 
-        # Call make_prediction to generate predictions for raining and eval sets
-        num_examples = len(eval_genes)
-        test_predictions = []
-        for i in range(0, num_examples, batch_size):
-            eval_genes_batch = eval_genes[i:i+batch_size]
-            eval_onehot = [seq_dict[x] for x in eval_genes_batch]
-            eval_onehot_batch = np.concatenate(eval_onehot, axis=0)
-            eval_hm_batch = eval_hm_inputs[i:i+batch_size]
-            preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
-            test_predictions.append(preds)
-        test_prediction = np.asarray([item for sublist in test_predictions for item in sublist])
         
-        
-        model = tf.keras.Sequential()
-        layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
-        max_pool_1 = tf.keras.layers.MaxPool1D(5)
-
-        layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
-        max_pool_2 = tf.keras.layers.MaxPool1D(3)
-
-        layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-        max_pool_3 = tf.keras.layers.MaxPool1D(3)
-
-        flatten = tf.keras.layers.Flatten()
-
-        dropout1 = tf.keras.layers.Dropout(0.3)
-        Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
-        Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
-        Dense_3 = tf.keras.layers.Dense(1,activation=None)
-
-        model.add(layer_1)
-        model.add(max_pool_1)
-
-        model.add(layer_2)
-        model.add(max_pool_2)
-
-        model.add(layer_3)
-        model.add(max_pool_3)
-
-        model.add(flatten)
-
-        model.add(dropout1)
-
-        model.add(Dense_1)
-
-        model.add(Dense_2)
-    
-        model.add(Dense_3)
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-        history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=15, validation_data=(validation_x,validation_y), shuffle=True)
-        val_loss.append(history.history["val_loss"])
-        train_loss.append(history.history["loss"])
-    # calling the method to create validation curves
-    create_val_plots(train_loss,val_loss)
+    #     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
+    #     history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=15, validation_data=(validation_x,validation_y), shuffle=True)
+    #     val_loss.append(history.history["val_loss"])
+    #     train_loss.append(history.history["loss"])
+    # # calling the method to create validation curves
+    # create_val_plots(train_loss,val_loss)
 
 
     # # running k-cross validation

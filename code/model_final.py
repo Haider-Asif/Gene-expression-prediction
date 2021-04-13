@@ -66,7 +66,7 @@ def get_data(train_cells,eval_cells):
             if num == 0:
                 rowgene = seq_data.loc[seq_data['gene_id'] == gene]
                 gene_seq = rowgene['sequence'].values[0]
-                gene_seq = gene_seq[3000:7000]
+                # gene_seq = gene_seq[3000:7000]
                 onehot_gene_seq = gene_one_hot_encoding(gene_seq)
                 gene2seq[gene] = onehot_gene_seq
             train_genes.append(gene)
@@ -102,7 +102,7 @@ def get_data(train_cells,eval_cells):
             if num == 0:
                 rowgene = seq_data.loc[seq_data['gene_id'] == gene]
                 gene_seq = rowgene['sequence'].values[0]
-                gene_seq = gene_seq[3000:7000]
+                # gene_seq = gene_seq[3000:7000]
                 onehot_gene_seq = gene_one_hot_encoding(gene_seq)
                 gene2seq[gene] = onehot_gene_seq
             eval_genes.append(gene)

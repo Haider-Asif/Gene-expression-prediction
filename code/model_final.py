@@ -124,14 +124,14 @@ class Autoencoder(tf.keras.Model):
 
 
 class HMmodel(tf.keras.layers.Layer):
-    def __init__(self):
+    def __init__(self,training):
         super(HMmodel, self).__init__()
 
-        self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(5)
+        self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", trainable=training)
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(5, trainable=training)
 
-        self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
-        self.max_pool_2 = tf.keras.layers.MaxPool1D(3)
+        self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", trainable=training)
+        self.max_pool_2 = tf.keras.layers.MaxPool1D(3, trainable=training)
 
         # self.layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
         # self.max_pool_3 = tf.keras.layers.MaxPool1D(3)
@@ -152,21 +152,21 @@ class HMmodel(tf.keras.layers.Layer):
 
 
 class SEQmodel(tf.keras.layers.Layer):
-    def __init__(self):
+    def __init__(self, training):
         super(SEQmodel, self).__init__()
         
-        self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(32)
+        self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME", trainable=training)
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(32, trainable=training)
 
-        self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
-        self.max_pool_2 = tf.keras.layers.MaxPool1D(10)
+        self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME", trainable=training)
+        self.max_pool_2 = tf.keras.layers.MaxPool1D(10, trainable=training)
 
         self.flatten = tf.keras.layers.Flatten()
 
 
     @tf.function
     def call(self, seq_batch):
-        conv_1 = self.layer_1(seq_batch)
+        conv_1 = self.layer_1(seq_batch,)
         mp_1 = self.max_pool_1(conv_1)
         conv_2 = self.layer_2(mp_1)
         mp_2 = self.max_pool_2(conv_2)
@@ -181,8 +181,8 @@ class COMBmodel(tf.keras.Model):
     def call(self, inputs):
         hm_batch, seq_batch, training = inputs
 
-        hm_model = HMmodel(trainable=training)
-        seq_model = SEQmodel(trainable=training)
+        hm_model = HMmodel(training)
+        seq_model = SEQmodel(training)
         opp_train = not training
         dropout1 = tf.keras.layers.Dropout(0.5)
         dropout2 = tf.keras.layers.Dropout(0.5)
@@ -329,8 +329,8 @@ def k_cross_validate_model(train_x, train_y, k):
         validation_genes = train_genes[int(i*(1/k)*len(train_genes)):int((i+1)*(1/k)*len(train_genes))]
         validation_exp = train_expression_vals[int(i*(1/k)*train_expression_vals.shape[0]):int((i+1)*(1/k)*train_expression_vals.shape[0])]
         training_hm = np.concatenate((train_hm_inputs[0:int(i*(1/k)*train_hm_inputs.shape[0])],train_hm_inputs[int((i+1)*(1/k)*train_hm_inputs.shape[0]):train_hm_inputs.shape[0]]), axis=0)
-        training_gene = np.concatenate((training_gene[0:int(i*(1/k)*train_y.shape[0])],training_gene[int((i+1)*(1/k)*train_y.shape[0]):train_y.shape[0]]), axis=0)
-        training_exp = np.concatenate((train_y[0:int(i*(1/k)*train_y.shape[0])],train_y[int((i+1)*(1/k)*train_y.shape[0]):train_y.shape[0]]), axis=0)
+        training_gene = np.concatenate((train_genes[0:int(i*(1/k)*len(train_genes))],train_genes[int((i+1)*(1/k)*len(train_genes)):len(train_genes)]), axis=0)
+        training_exp = np.concatenate((train_expression_vals[0:int(i*(1/k)*train_expression_vals.shape[0])],train_expression_vals[int((i+1)*(1/k)*train_expression_vals.shape[0]):train_expression_vals.shape[0]]), axis=0)
         
         # constructing the validation model
         model = COMBmodel()
@@ -341,12 +341,17 @@ def k_cross_validate_model(train_x, train_y, k):
 
         for e in range(num_epochs):
             loss_list = []
-            num_examples = np.shape(train_hm_inputs)[0]
+            num_examples = np.shape(training_hm)[0]
             range_indicies = range(0, num_examples)
             shuffled_indicies = tf.random.shuffle(range_indicies)
-            train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
-            train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
-            train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
+            train_hm_inputs = tf.gather(training_hm, shuffled_indicies)
+            train_genes = tf.gather(training_gene, shuffled_indicies).numpy().tolist()
+            train_expression_vals = tf.gather(training_exp, shuffled_indicies)
+            val_hm_inputs = tf.gather(validation_hm, shuffled_indicies)
+            val_genes = tf.gather(validation_genes, shuffled_indicies).numpy().tolist()
+            val_expression_vals = tf.gather(validation_exp, shuffled_indicies)
+            val_onehot = [seq_dict[x] for x in val_genes]
+            val_onehot_inputs = np.concatenate(val_onehot, axis=0)
             for i in range(0, num_examples, batch_size):
                 # print(i)
                 batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
@@ -362,10 +367,13 @@ def k_cross_validate_model(train_x, train_y, k):
                     loss_list.append(loss)
                     gradients = tape.gradient(loss, model.trainable_variables)
                     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        
             loss = np.mean(loss_list)
-            print('epoch ' + str(e) + ': loss ' + str(loss))
-                
+            print('epoch ' + str(e) + ': training loss ' + str(loss))
+            
+            val_preds = model.predict(val_hm_inputs, val_onehot_inputs)
+            val_loss = model.loss(val_preds, val_expression_vals)
+            print('epoch ' + str(e) + ': validation loss ' + str(val_loss))
+
         for e in range(num_epochs):
             loss_list = []
             num_examples = np.shape(train_hm_inputs)[0]

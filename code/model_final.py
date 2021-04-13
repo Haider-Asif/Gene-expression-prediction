@@ -26,7 +26,7 @@ def gene_one_hot_encoding(single_seq):
     :return: np array of one-hot encoding of input DNA sequence
     """
     nuc2id = {'A' : 0, 'C' : 1, 'T' : 2, 'G' : 3, 'N' : 0}
-    onehot_array = np.zeros((1, 4000, 4))
+    onehot_array = np.zeros((1, 10000, 4))
     for seq_idx, nucleotide in enumerate(single_seq):
         nuc_idx = nuc2id[nucleotide]
         onehot_array[0, seq_idx, nuc_idx] = 1

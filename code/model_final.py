@@ -314,57 +314,15 @@ def k_cross_validate_model(train_x, train_y, k):
     # calling the method to create validation curves
     create_val_plots(train_loss,val_loss)
 
-def train_model(train_x, train_y):
-    """
-    method that Implements and trains the model using a cross-validation scheme with MSE loss
-    @parma train_x - training inputs
-    @param train_y - training labels
-    @return model - trained model
-    """
 
-    # constructing the model
-    model = tf.keras.Sequential()
-    layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
-    max_pool_1 = tf.keras.layers.MaxPool1D(5)
-
-    layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
-    max_pool_2 = tf.keras.layers.MaxPool1D(3)
-
-    layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-    max_pool_3 = tf.keras.layers.MaxPool1D(3)
-
-    flatten = tf.keras.layers.Flatten()
-
-    dropout1 = tf.keras.layers.Dropout(0.3)
-    Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
-    Dense_3 = tf.keras.layers.Dense(1,activation=None)
-    model.add(layer_1)
-    model.add(max_pool_1)
-
-    model.add(layer_2)
-    model.add(max_pool_2)
-
-    model.add(layer_3)
-    model.add(max_pool_3)
-
-    model.add(flatten)
-
-    model.add(dropout1)
-    model.add(Dense_1)
-
-    model.add(Dense_2)
- 
-    model.add(Dense_3)
-    # running k-cross validation
-    k_cross_validate_model(train_x,train_y,4)
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-    history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=15,shuffle=True)
-    # printing the model summary
-    model.summary()
-    # creating the training loss plot
-    create_train_plots(history.history["loss"])
-    return model
+    # # running k-cross validation
+    # k_cross_validate_model(train_x,train_y,4)
+    # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
+    # history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=15,shuffle=True)
+    # # printing the model summary
+    # model.summary()
+    # # creating the training loss plot
+    # create_train_plots(history.history["loss"])
 
 def make_prediction(model, eval_inputs, eval_genes):
     """
@@ -455,11 +413,11 @@ def main():
     # Call get_data() to read in all of the data
     train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
 
-    autoencoder = Autoencoder(64)
-    autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
-    autoencoder.fit(train_hm_inputs, train_hm_inputs, batch_size=250, epochs=10, shuffle=True)
+    # autoencoder = Autoencoder(64)
+    # autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
+    # autoencoder.fit(train_hm_inputs, train_hm_inputs, batch_size=250, epochs=10, shuffle=True)
 
-    train_hm_inputs = autoencoder.predict(train_hm_inputs)
+    # train_hm_inputs = autoencoder.predict(train_hm_inputs)
 
     model = COMBmodel()
     model.built = True

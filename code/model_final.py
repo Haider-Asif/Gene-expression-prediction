@@ -141,11 +141,11 @@ class HMmodel(tf.keras.layers.Layer):
         self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         self.max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-        self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
+        self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         self.max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
-        self.layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-        self.max_pool_3 = tf.keras.layers.MaxPool1D(3)
+        # self.layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        # self.max_pool_3 = tf.keras.layers.MaxPool1D(3)
 
         self.flatten = tf.keras.layers.Flatten()
 
@@ -155,9 +155,9 @@ class HMmodel(tf.keras.layers.Layer):
         mp_1 = self.max_pool_1(conv_1)
         conv_2 = self.layer_2(mp_1)
         mp_2 = self.max_pool_2(conv_2)
-        conv_3 = self.layer_3(mp_2)
-        mp_3 = self.max_pool_3(conv_3)
-        flat = self.flatten(mp_3)
+        # conv_3 = self.layer_3(mp_2)
+        # mp_3 = self.max_pool_3(conv_3)
+        flat = self.flatten(mp_2)
         return flat
 
 
@@ -194,7 +194,7 @@ class COMBmodel(tf.keras.Model):
         self.dropout1 = tf.keras.layers.Dropout(0.5)
         self.dropout2 = tf.keras.layers.Dropout(0.5)
         self.dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
-        self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
+        # self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_3 = tf.keras.layers.Dense(1,activation=None)
 
     
@@ -206,49 +206,14 @@ class COMBmodel(tf.keras.Model):
         seq_drop = self.dropout2(seq_flat)
         combined = tf.keras.layers.concatenate([hm_drop, seq_drop])
         fully_con1 = self.dense_1(combined)
-        fully_con2 = self.dense_2(fully_con1)
-        output = self.dense_3(fully_con2) 
+        # fully_con2 = self.dense_2(fully_con1)
+        output = self.dense_3(fully_con1) 
         return output
     
     
     def loss(self, pred, true):
         mse = tf.keras.losses.MeanSquaredError()
         return mse(true, pred)
-
-
-def train(model, optimizer, batch_size, hm_training, gene_training, seq_dict, expression_vals):
-    loss_list = []
-    num_examples = np.shape(hm_training)[0]
-    range_indicies = range(0, num_examples)
-    shuffled_indicies = tf.random.shuffle(range_indicies)
-    shuffled_hm_inputs = tf.gather(hm_training, shuffled_indicies)
-    shuffled_genes = tf.gather(hm_training, shuffled_indicies).numpy().tolist()
-    shuffled_expression_vals = tf.gather(expression_vals, shuffled_indicies)
-    for i in range(0, num_examples, batch_size):
-        batch_hm_inputs = shuffled_hm_inputs[i:i+batch_size,:,:]
-        batch_genes = shuffled_genes[i:i+batch_size]
-        batch_onehot = [seq_dict[x] for x in batch_genes]
-        batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
-        batch_exp_vals = shuffled_expression_vals[i:i+batch_size]
-        with tf.GradientTape() as tape:
-            output = model.call(batch_hm_inputs, batch_onehot_inputs)
-            loss = model.loss(output, batch_exp_vals)
-            loss_list.append(loss)
-            gradients = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    avg_loss = np.mean(loss_list)
-    return avg_loss
-
-
-# model = COMBmodel()
-# model.built = True
-# optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
-# batch_size = 250
-# num_epochs = 20
-
-# for e in range(num_epochs):
-#     loss = train(model, optimizer, batch_size, dataset)
-#     print('epoch ' + str(e) + ': loss ' + str(loss))
 
 
 

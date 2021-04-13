@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
-tf.keras.backend.set_floatx('float64')
+# tf.keras.backend.set_floatx('float64')
 
 def one_hot_encoding(seq_array):
     """
@@ -182,8 +182,8 @@ class COMBmodel(tf.keras.Model):
     def call(self, inputs):
         hm_batch, seq_batch, training = inputs
 
-        hm_model = HMmodel(training)
-        seq_model = SEQmodel(training)
+        hm_model = HMmodel(training,dtype='float32')
+        seq_model = SEQmodel(training,dtype='float64')
         opp_train = not training
         dropout1 = tf.keras.layers.Dropout(0.5)
         dropout2 = tf.keras.layers.Dropout(0.5)

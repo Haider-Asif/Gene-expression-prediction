@@ -6,6 +6,7 @@ from sklearn.metrics import mean_squared_error
 import pandas as pd
 from tensorflow.python.keras.backend import dtype
 # tf.keras.backend.set_floatx('float64')
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 def one_hot_encoding(seq_array):
     """

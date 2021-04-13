@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
+tf.keras.backend.set_floatx('float64')
 
 def one_hot_encoding(seq_array):
     """
@@ -370,9 +371,9 @@ def k_cross_validate_model(train_x, train_y, k):
             loss = np.mean(loss_list)
             print('epoch ' + str(e) + ': training loss ' + str(loss))
             
-            val_preds = model.predict(val_hm_inputs, val_onehot_inputs)
-            val_loss = model.loss(val_preds, val_expression_vals)
-            print('epoch ' + str(e) + ': validation loss ' + str(val_loss))
+            # val_preds = model.predict(val_hm_inputs, val_onehot_inputs)
+            # val_loss = model.loss(val_preds, val_expression_vals)
+            # print('epoch ' + str(e) + ': validation loss ' + str(val_loss))
 
         for e in range(num_epochs):
             loss_list = []
@@ -388,7 +389,6 @@ def k_cross_validate_model(train_x, train_y, k):
             val_onehot = [seq_dict[x] for x in val_genes]
             val_onehot_inputs = np.concatenate(val_onehot, axis=0)
             for i in range(0, num_examples, batch_size):
-                # print(i)
                 batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
                 batch_genes = train_genes[i:i+batch_size]
                 batch_onehot = [seq_dict[x] for x in batch_genes]

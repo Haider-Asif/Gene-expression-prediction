@@ -124,7 +124,7 @@ class Autoencoder(tf.keras.Model):
     return decoded
 
 
-class HMmodel(tf.keras.layers.Layer):
+class HMmodel(tf.keras.layers.Layer(dtype='float32')):
     def __init__(self,training):
         super(HMmodel, self).__init__()
 
@@ -152,7 +152,7 @@ class HMmodel(tf.keras.layers.Layer):
         return flat
 
 
-class SEQmodel(tf.keras.layers.Layer):
+class SEQmodel(tf.keras.layers.Layer(dtype='float64')):
     def __init__(self, training):
         super(SEQmodel, self).__init__()
         
@@ -182,8 +182,8 @@ class COMBmodel(tf.keras.Model):
     def call(self, inputs):
         hm_batch, seq_batch, training = inputs
 
-        hm_model = HMmodel(training,dtype='float32')
-        seq_model = SEQmodel(training,dtype='float64')
+        hm_model = HMmodel(training)
+        seq_model = SEQmodel(training)
         opp_train = not training
         dropout1 = tf.keras.layers.Dropout(0.5)
         dropout2 = tf.keras.layers.Dropout(0.5)

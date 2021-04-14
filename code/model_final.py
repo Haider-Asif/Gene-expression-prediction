@@ -229,7 +229,7 @@ def main():
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
     batch_size = 100
-    num_epochs = 10
+    num_epochs = 1
 
     for e in range(num_epochs):
         loss_list = []
@@ -427,7 +427,7 @@ def k_cross_validate_model(train_x, train_y, k):
     # # creating the training loss plot
     # create_train_plots(history.history["loss"])
 
-def make_prediction(model, eval_inputs, eval_genes):
+def make_prediction(model, eval_inputs, eval_genes, bools=False):
     """
     method to make predictions from the model based on the input data
     @param model - a tf.keras.Sequential model
@@ -435,7 +435,7 @@ def make_prediction(model, eval_inputs, eval_genes):
     @return - returns the model predictions
     """ 
 
-    return model.predict((eval_inputs, eval_genes))
+    return model.predict((eval_inputs, eval_genes,bools))
         
 def evaluation_metrics(prediction, train_y):
     """

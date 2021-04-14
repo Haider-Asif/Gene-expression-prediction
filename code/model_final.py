@@ -342,7 +342,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.built = True
         optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
         batch_size = 100
-        num_epochs = 5
+        num_epochs = 10
 
         for e in range(num_epochs):
             loss_list = []

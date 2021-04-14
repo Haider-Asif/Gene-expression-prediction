@@ -229,7 +229,7 @@ def main():
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
     batch_size = 100
-    num_epochs = 1
+    num_epochs = 10
 
     for e in range(num_epochs):
         loss_list = []

@@ -435,7 +435,7 @@ def make_prediction(model, eval_inputs, eval_genes, bools=False):
     @return - returns the model predictions
     """ 
 
-    return model.predict((eval_inputs, eval_genes,bools))
+    return model.call((eval_inputs, eval_genes,bools))
         
 def evaluation_metrics(prediction, train_y):
     """

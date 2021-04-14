@@ -127,20 +127,20 @@ class Autoencoder(tf.keras.Model):
 
 
 class HMmodel(tf.keras.layers.Layer):
-    def __init__(self,training):
+    def __init__(self):
         super(HMmodel, self).__init__(dtype="float32")
 
-        self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", trainable=training)
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(5, trainable=training)
+        self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-        self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", trainable=training)
-        self.max_pool_2 = tf.keras.layers.MaxPool1D(3, trainable=training)
+        self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        self.max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
         # self.layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
         # self.max_pool_3 = tf.keras.layers.MaxPool1D(3)
 
         self.flatten = tf.keras.layers.Flatten()
-
+        self.dense = tf.keras.layers.Dense(100,activation="relu")
 
     # @tf.function
     def call(self, hm_batch):
@@ -151,56 +151,57 @@ class HMmodel(tf.keras.layers.Layer):
         # conv_3 = self.layer_3(mp_2)
         # mp_3 = self.max_pool_3(conv_3)
         flat = self.flatten(mp_2)
-        return flat
+        dense = self.dense(flat)
+        return dense
 
 
 class SEQmodel(tf.keras.layers.Layer):
-    def __init__(self, training):
+    def __init__(self):
         super(SEQmodel, self).__init__(dtype="float64")
         
-        self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME", trainable=training)
-        self.max_pool_1 = tf.keras.layers.MaxPool1D(32, trainable=training)
+        self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
+        self.max_pool_1 = tf.keras.layers.MaxPool1D(32)
 
-        self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME", trainable=training)
-        self.max_pool_2 = tf.keras.layers.MaxPool1D(10, trainable=training)
+        self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
+        self.max_pool_2 = tf.keras.layers.MaxPool1D(10)
 
         self.flatten = tf.keras.layers.Flatten()
+        self.dense = tf.keras.layers.Dense(100,activation="relu")
 
 
     # @tf.function
     def call(self, seq_batch):
-        conv_1 = self.layer_1(seq_batch,)
+        conv_1 = self.layer_1(seq_batch)
         mp_1 = self.max_pool_1(conv_1)
         conv_2 = self.layer_2(mp_1)
         mp_2 = self.max_pool_2(conv_2)
         flat = self.flatten(mp_2)
-        return flat
+        dense = self.dense(flat)
+        return dense
 
 
 class COMBmodel(tf.keras.Model):
     def __init__(self):
         super(COMBmodel, self).__init__()
-  
-    def call(self, inputs):
-        hm_batch, seq_batch, training = inputs
-
-        hm_model = HMmodel(training)
-        seq_model = SEQmodel(training)
-        opp_train = not training
-        dropout1 = tf.keras.layers.Dropout(0.5)
-        dropout2 = tf.keras.layers.Dropout(0.5)
-        dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05), trainable = opp_train)
+        self.hm_model = HMmodel()
+        self.seq_model = SEQmodel()
+        self.dropout1 = tf.keras.layers.Dropout(0.5)
+        self.dropout2 = tf.keras.layers.Dropout(0.5)
+        self.dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
         # self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
-        dense_3 = tf.keras.layers.Dense(1,activation=None, trainable = opp_train)
-        
-        hm_flat = hm_model(hm_batch)
-        hm_drop = dropout1(hm_flat, training=opp_train)
-        seq_flat = seq_model(seq_batch)
-        seq_drop = dropout2(seq_flat, training=opp_train)
+        self.dense_3 = tf.keras.layers.Dense(1,activation=None)
+
+    def call(self, inputs):
+        hm_batch, seq_batch, train_bool = inputs
+        opp_train = not train_bool
+        hm_flat = self.hm_model(hm_batch,training=train_bool)
+        hm_drop = self.dropout1(hm_flat, training=opp_train)
+        seq_flat = self.seq_model(seq_batch,training=train_bool)
+        seq_drop = self.dropout2(seq_flat, training=opp_train)
         combined = tf.keras.layers.concatenate([hm_drop, seq_drop])
-        fully_con1 = dense_1(combined)
+        fully_con1 = self.dense_1(combined, training=opp_train)
         # fully_con2 = self.dense_2(fully_con1)
-        output = dense_3(fully_con1) 
+        output = self.dense_3(fully_con1, training=opp_train) 
         return output
     
     
@@ -341,7 +342,7 @@ def k_cross_validate_model(train_x, train_y, k):
         model.built = True
         optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
         batch_size = 100
-        num_epochs = 10
+        num_epochs = 5
 
         for e in range(num_epochs):
             loss_list = []
@@ -373,10 +374,6 @@ def k_cross_validate_model(train_x, train_y, k):
                 optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             loss = np.mean(loss_list)
             print('epoch ' + str(e) + ': training loss ' + str(loss))
-            
-            # val_preds = model.predict(val_hm_inputs, val_onehot_inputs)
-            # val_loss = model.loss(val_preds, val_expression_vals)
-            # print('epoch ' + str(e) + ': validation loss ' + str(val_loss))
 
         for e in range(num_epochs):
             loss_list = []

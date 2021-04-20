@@ -4,9 +4,6 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
-from tensorflow.python.keras.backend import dtype
-# tf.keras.backend.set_floatx('float64')
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 def one_hot_encoding(seq_array):
     """
@@ -66,7 +63,6 @@ def get_data(train_cells,eval_cells):
             if num == 0:
                 rowgene = seq_data.loc[seq_data['gene_id'] == gene]
                 gene_seq = rowgene['sequence'].values[0]
-                # gene_seq = gene_seq[3000:7000]
                 onehot_gene_seq = gene_one_hot_encoding(gene_seq)
                 gene2seq[gene] = onehot_gene_seq
             train_genes.append(gene)
@@ -74,12 +70,9 @@ def get_data(train_cells,eval_cells):
         train_outputs.append(exp_values)
 
     train_inputs = np.concatenate(train_inputs, axis=0)
-    print(np.shape(train_inputs))
     train_outputs = np.concatenate(train_outputs, axis=0)
-    print(np.shape(train_outputs))
-    print(len(gene2seq))
-    print(np.shape(gene2seq[5]))
     train_genes = np.asarray(train_genes)
+
 
     # Prepare Eval inputs in similar way
     eval_inputs = []
@@ -93,7 +86,6 @@ def get_data(train_cells,eval_cells):
             if num == 0:
                 rowgene = seq_data.loc[seq_data['gene_id'] == gene]
                 gene_seq = rowgene['sequence'].values[0]
-                # gene_seq = gene_seq[3000:7000]
                 onehot_gene_seq = gene_one_hot_encoding(gene_seq)
                 gene2seq[gene] = onehot_gene_seq
             eval_genes.append(gene)
@@ -125,10 +117,9 @@ class Autoencoder(tf.keras.Model):
     decoded = self.decoder(encoded)
     return decoded
 
-
 class HMmodel(tf.keras.layers.Layer):
     def __init__(self):
-        super(HMmodel, self).__init__(dtype="float32")
+        super(HMmodel, self).__init__()
 
         self.layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         self.max_pool_1 = tf.keras.layers.MaxPool1D(5)
@@ -136,298 +127,152 @@ class HMmodel(tf.keras.layers.Layer):
         self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         self.max_pool_2 = tf.keras.layers.MaxPool1D(3)
 
-        # self.layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
-        # self.max_pool_3 = tf.keras.layers.MaxPool1D(3)
-
         self.flatten = tf.keras.layers.Flatten()
-        self.dense = tf.keras.layers.Dense(100,activation="relu")
 
-    # @tf.function
+        self.dropout_1 = tf.keras.layers.Dropout(0.5)
+
+        self.dense_1 = tf.keras.layers.Dense(82)
+
+    @tf.function
     def call(self, hm_batch):
         conv_1 = self.layer_1(hm_batch)
         mp_1 = self.max_pool_1(conv_1)
         conv_2 = self.layer_2(mp_1)
         mp_2 = self.max_pool_2(conv_2)
-        # conv_3 = self.layer_3(mp_2)
-        # mp_3 = self.max_pool_3(conv_3)
         flat = self.flatten(mp_2)
-        dense = self.dense(flat)
+        drop = self.dropout_1(flat)
+        dense = self.dense_1(drop)
         return dense
 
 
 class SEQmodel(tf.keras.layers.Layer):
     def __init__(self):
-        super(SEQmodel, self).__init__(dtype="float64")
+        super(SEQmodel, self).__init__()
         
-        self.layer_1 = tf.keras.layers.Conv1D(128,6,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
+        self.layer_1 = tf.keras.layers.Conv1D(128,6,activation=tf.keras.layers.LeakyReLU(0.05), kernel_initializer='glorot_normal', padding="SAME")
         self.max_pool_1 = tf.keras.layers.MaxPool1D(32)
 
-        self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
-        self.max_pool_2 = tf.keras.layers.MaxPool1D(10)
-
         self.flatten = tf.keras.layers.Flatten()
-        self.dense = tf.keras.layers.Dense(100,activation="relu")
 
+        self.dropout_1 = tf.keras.layers.Dropout(0.5)
 
-    # @tf.function
+        self.dense_1 = tf.keras.layers.Dense(82)
+
+        
+    @tf.function
     def call(self, seq_batch):
         conv_1 = self.layer_1(seq_batch)
         mp_1 = self.max_pool_1(conv_1)
-        conv_2 = self.layer_2(mp_1)
-        mp_2 = self.max_pool_2(conv_2)
-        flat = self.flatten(mp_2)
-        dense = self.dense(flat)
+        flat = self.flatten(mp_1)
+        drop = self.dropout_1(flat)
+        dense = self.dense_1(drop)
         return dense
 
 
 class COMBmodel(tf.keras.Model):
     def __init__(self):
         super(COMBmodel, self).__init__()
+
         self.hm_model = HMmodel()
         self.seq_model = SEQmodel()
+
         self.dropout1 = tf.keras.layers.Dropout(0.5)
         self.dropout2 = tf.keras.layers.Dropout(0.5)
-        self.dense_1 = tf.keras.layers.Dense(100,activation=tf.keras.layers.LeakyReLU(0.05))
+        self.dense_1 = tf.keras.layers.Dense(36,activation=tf.keras.layers.LeakyReLU(0.05))
         # self.dense_2 = tf.keras.layers.Dense(24,activation=tf.keras.layers.LeakyReLU(0.05))
         self.dense_3 = tf.keras.layers.Dense(1,activation=None)
+        self.dropout3 = tf.keras.layers.Dropout(0.1)
 
+    
     def call(self, inputs):
-        hm_batch, seq_batch, train_bool = inputs
-        opp_train = not train_bool
-        hm_flat = self.hm_model(hm_batch,training=train_bool)
-        hm_drop = self.dropout1(hm_flat, training=opp_train)
-        seq_flat = self.seq_model(seq_batch,training=train_bool)
-        seq_drop = self.dropout2(seq_flat, training=opp_train)
-        combined = tf.keras.layers.concatenate([hm_drop, seq_drop])
-        fully_con1 = self.dense_1(combined, training=opp_train)
-        # fully_con2 = self.dense_2(fully_con1)
-        output = self.dense_3(fully_con1, training=opp_train) 
+        hm_batch, seq_batch = inputs
+        hm_dense = self.hm_model(hm_batch)
+        seq_dense = self.seq_model(seq_batch)
+        combined = tf.keras.layers.concatenate([hm_dense, seq_dense])
+        fully_con1 = self.dense_1(combined)
+        con_drop = self.dropout3(fully_con1)
+        output = self.dense_3(con_drop) 
         return output
     
     
     def loss(self, pred, true):
         mse = tf.keras.losses.MeanSquaredError()
         return mse(true, pred)
-        
-
-def main():
-    # Keys to npzfile of train & eval
-    train_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E105', 'E011', 'E106', 'E082', 'E097', 'E116', 'E098', 'E058', 
-    'E117', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E127', 'E047', 'E094', 'E007', 'E054', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
-    eval_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E071', 'E105', 'E087', 'E011', 'E106', 'E096', 'E082', 'E097', 
-    'E116', 'E098', 'E058', 'E117', 'E084', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E112', 'E127', 'E047', 'E094', 'E007', 'E054', 'E113', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
-    # Call get_data() to read in all of the data
-    train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
-
-    # autoencoder = Autoencoder(64)
-    # autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
-    # autoencoder.fit(train_hm_inputs, train_hm_inputs, batch_size=250, epochs=10, shuffle=True)
-
-    # train_hm_inputs = autoencoder.predict(train_hm_inputs)
-
-    model = COMBmodel()
-    model.built = True
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
-    batch_size = 100
-    num_epochs = 10
-
-    for e in range(num_epochs):
-        loss_list = []
-        num_examples = np.shape(train_hm_inputs)[0]
-        range_indicies = range(0, num_examples)
-        shuffled_indicies = tf.random.shuffle(range_indicies)
-        train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
-        train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
-        train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
-        for i in range(0, num_examples, batch_size):
-            # print(i)
-            batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
-            batch_genes = train_genes[i:i+batch_size]
-            batch_onehot = [seq_dict[x] for x in batch_genes]
-            batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
-            batch_exp_vals = train_expression_vals[i:i+batch_size]
-
-            # Pre-training the HM and SEQ Models
-            with tf.GradientTape() as tape:
-                output = model.call((batch_hm_inputs, batch_onehot_inputs, True))
-                loss = model.loss(output, batch_exp_vals)
-                loss_list.append(loss)
-            gradients = tape.gradient(loss, model.trainable_variables)
-                # arr.append(gradients*inputs)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    
-        loss = np.mean(loss_list)
-        print('epoch ' + str(e) + ': loss ' + str(loss))
-            
-    for e in range(num_epochs):
-        loss_list = []
-        num_examples = np.shape(train_hm_inputs)[0]
-        range_indicies = range(0, num_examples)
-        shuffled_indicies = tf.random.shuffle(range_indicies)
-        train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
-        train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
-        train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
-        for i in range(0, num_examples, batch_size):
-            # print(i)
-            batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
-            batch_genes = train_genes[i:i+batch_size]
-            batch_onehot = [seq_dict[x] for x in batch_genes]
-            batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
-            batch_exp_vals = train_expression_vals[i:i+batch_size]
-
-            # Second round of training
-            with tf.GradientTape() as tape:
-                output = model.call((batch_hm_inputs, batch_onehot_inputs, False))
-                loss = model.loss(output, batch_exp_vals)
-                loss_list.append(loss)
-            gradients = tape.gradient(loss, model.trainable_variables)
-            optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        
-        loss = np.mean(loss_list)
-        print('epoch ' + str(e) + ': loss ' + str(loss))
-
-    # Call make_prediction to generate predictions for raining and eval sets
-    num_examples = len(eval_genes)
-    test_predictions = []
-    for i in range(0, num_examples, batch_size):
-        eval_genes_batch = eval_genes[i:i+batch_size]
-        eval_onehot = [seq_dict[x] for x in eval_genes_batch]
-        eval_onehot_batch = np.concatenate(eval_onehot, axis=0)
-        eval_hm_batch = eval_hm_inputs[i:i+batch_size]
-        preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
-        test_predictions.append(preds)
-    test_prediction = np.asarray([item for sublist in test_predictions for item in sublist])
-
-    # train_prediction = make_prediction(model,train_x)
-
-    # # Call evaluation_metrics to generate the average pearson's correlation and average final MSE for the training sets
-    # pearsons,loss = evaluation_metrics(train_prediction, train_y)
-    # print("Pearsons correlation co-efficent: ", pearsons)
-    # print("Average final Mean squared error loss: ",loss)
-
-    # Call generate csv to submit the csv to kaggle
-    generate_csv(test_prediction.flatten(), eval_cells, eval_data)
 
 
-def k_cross_validate_model(train_x, train_y, k):
+
+def k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_expression_vals, k):
     """
     method to run k-cross validation on the model
     @parma train_x - training inputs
     @param train_y - training labels
     @param k - split ratio int, data splits into (1 - 1/k) train, and 1/k test ratios
     """
-    # Keys to npzfile of train & eval
-    train_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E105', 'E011', 'E106', 'E082', 'E097', 'E116', 'E098', 'E058', 
-    'E117', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E127', 'E047', 'E094', 'E007', 'E054', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
-    eval_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E071', 'E105', 'E087', 'E011', 'E106', 'E096', 'E082', 'E097', 
-    'E116', 'E098', 'E058', 'E117', 'E084', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E112', 'E127', 'E047', 'E094', 'E007', 'E054', 'E113', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
-    # Call get_data() to read in all of the data
-    train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
 
-    val_loss = []
-    train_loss = []
+    # calling the method to create validation curves
+    model = COMBmodel()
+    model.built = True
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
+    batch_size = 100
+    num_epochs = 10
     for i in range(k):
         print('Running fold ' + str(i+1))
-
         #spliting the training and validation data
-        validation_hm = train_hm_inputs[int(i*(1/k)*train_hm_inputs.shape[0]):int((i+1)*(1/k)*train_hm_inputs.shape[0])]
-        validation_genes = train_genes[int(i*(1/k)*len(train_genes)):int((i+1)*(1/k)*len(train_genes))]
-        validation_exp = train_expression_vals[int(i*(1/k)*train_expression_vals.shape[0]):int((i+1)*(1/k)*train_expression_vals.shape[0])]
-        training_hm = np.concatenate((train_hm_inputs[0:int(i*(1/k)*train_hm_inputs.shape[0])],train_hm_inputs[int((i+1)*(1/k)*train_hm_inputs.shape[0]):train_hm_inputs.shape[0]]), axis=0)
-        training_gene = np.concatenate((train_genes[0:int(i*(1/k)*len(train_genes))],train_genes[int((i+1)*(1/k)*len(train_genes)):len(train_genes)]), axis=0)
-        training_exp = np.concatenate((train_expression_vals[0:int(i*(1/k)*train_expression_vals.shape[0])],train_expression_vals[int((i+1)*(1/k)*train_expression_vals.shape[0]):train_expression_vals.shape[0]]), axis=0)
-        
-        # constructing the validation model
-        model = COMBmodel()
-        model.built = True
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
-        batch_size = 100
-        num_epochs = 10
+        eval_hm_inputs = train_hm_inputs[int(i*(1/k)*train_hm_inputs.shape[0]):int((i+1)*(1/k)*train_hm_inputs.shape[0])]
+        eval_genes = train_genes[int(i*(1/k)*train_genes.shape[0]):int((i+1)*(1/k)*train_genes.shape[0])]
+        eval_expression_vals = train_expression_vals[int(i*(1/k)*train_expression_vals.shape[0]):int((i+1)*(1/k)*train_expression_vals.shape[0])]
+        train_hm_inputs = np.concatenate((train_hm_inputs[0:int(i*(1/k)*train_hm_inputs.shape[0])],train_hm_inputs[int((i+1)*(1/k)*train_hm_inputs.shape[0]):train_hm_inputs.shape[0]]), axis=0)
+        train_genes = np.concatenate((train_genes[0:int(i*(1/k)*train_genes.shape[0])],train_genes[int((i+1)*(1/k)*train_genes.shape[0]):train_genes.shape[0]]), axis=0)
+        train_expression_vals = np.concatenate((train_expression_vals[0:int(i*(1/k)*train_expression_vals.shape[0])],train_expression_vals[int((i+1)*(1/k)*train_expression_vals.shape[0]):train_expression_vals.shape[0]]), axis=0)
 
         for e in range(num_epochs):
             loss_list = []
-            num_examples = np.shape(training_hm)[0]
+            num_examples = np.shape(train_hm_inputs)[0]
             range_indicies = range(0, num_examples)
             shuffled_indicies = tf.random.shuffle(range_indicies)
-            train_hm_inputs = tf.gather(training_hm, shuffled_indicies)
-            train_genes = tf.gather(training_gene, shuffled_indicies).numpy().tolist()
-            train_expression_vals = tf.gather(training_exp, shuffled_indicies)
-            val_hm_inputs = tf.gather(validation_hm, shuffled_indicies)
-            val_genes = tf.gather(validation_genes, shuffled_indicies).numpy().tolist()
-            val_expression_vals = tf.gather(validation_exp, shuffled_indicies)
-            val_onehot = [seq_dict[x] for x in val_genes]
-            val_onehot_inputs = np.concatenate(val_onehot, axis=0)
-            for i in range(0, num_examples, batch_size):
-                # print(i)
-                batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
-                batch_genes = train_genes[i:i+batch_size]
-                batch_onehot = [seq_dict[x] for x in batch_genes]
-                batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
-                batch_exp_vals = train_expression_vals[i:i+batch_size]
-
-                # Pre-training the HM and SEQ Models
-                with tf.GradientTape() as tape:
-                    output = model.call((batch_hm_inputs, batch_onehot_inputs, True))
-                    loss = model.loss(output, batch_exp_vals)
-                    loss_list.append(loss)
-                gradients = tape.gradient(loss, model.trainable_variables)
-                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-            loss = np.mean(loss_list)
-            print('epoch ' + str(e) + ': training loss ' + str(loss))
-
-        for e in range(num_epochs):
-            loss_list = []
-            num_examples = np.shape(training_hm)[0]
-            range_indicies = range(0, num_examples)
-            shuffled_indicies = tf.random.shuffle(range_indicies)
-            train_hm_inputs = tf.gather(training_hm, shuffled_indicies)
-            train_genes = tf.gather(training_gene, shuffled_indicies).numpy().tolist()
-            train_expression_vals = tf.gather(training_exp, shuffled_indicies)
-            val_hm_inputs = tf.gather(validation_hm, shuffled_indicies)
-            val_genes = tf.gather(validation_genes, shuffled_indicies).numpy().tolist()
-            val_expression_vals = tf.gather(validation_exp, shuffled_indicies)
-            val_onehot = [seq_dict[x] for x in val_genes]
-            val_onehot_inputs = np.concatenate(val_onehot, axis=0)
+            train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
+            train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
+            train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
             for i in range(0, num_examples, batch_size):
                 batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
                 batch_genes = train_genes[i:i+batch_size]
                 batch_onehot = [seq_dict[x] for x in batch_genes]
                 batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
                 batch_exp_vals = train_expression_vals[i:i+batch_size]
-
-                # Second round of training
                 with tf.GradientTape() as tape:
-                    output = model.call((batch_hm_inputs, batch_onehot_inputs, False))
+                    output = model.call((batch_hm_inputs, batch_onehot_inputs))
                     loss = model.loss(output, batch_exp_vals)
                     loss_list.append(loss)
-                gradients = tape.gradient(loss, model.trainable_variables)
-                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+                    gradients = tape.gradient(loss, model.trainable_variables)
+                    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
             loss = np.mean(loss_list)
-            print('epoch ' + str(e) + ': training loss ' + str(loss))
-            
-            val_preds = model.predict(val_hm_inputs, val_onehot_inputs)
-            val_loss = model.loss(val_preds, val_expression_vals)
-            print('epoch ' + str(e) + ': validation loss ' + str(val_loss))
+            print('epoch ' + str(e+1) + ': loss ' + str(loss))
 
-        
-    #     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-    #     history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=15, validation_data=(validation_x,validation_y), shuffle=True)
-    #     val_loss.append(history.history["val_loss"])
-    #     train_loss.append(history.history["loss"])
-    # # calling the method to create validation curves
-    # create_val_plots(train_loss,val_loss)
+        num_examples = len(train_genes)
+        train_predictions = []
+        for i in range(0, num_examples, batch_size):
+            train_genes_batch = train_genes[i:i+batch_size]
+            train_onehot = [seq_dict[x] for x in train_genes_batch]
+            train_onehot_batch = np.concatenate(train_onehot, axis=0)
+            train_hm_batch = train_hm_inputs[i:i+batch_size]
+            preds = make_prediction(model, train_hm_batch, train_onehot_batch)
+            train_predictions.append(preds)
+        train_prediction = np.asarray([item for sublist in train_predictions for item in sublist])
 
+        num_examples = len(eval_genes)
+        test_predictions = []
+        for i in range(0, num_examples, batch_size):
+            eval_genes_batch = eval_genes[i:i+batch_size]
+            eval_onehot = [seq_dict[x] for x in eval_genes_batch]
+            eval_onehot_batch = np.concatenate(eval_onehot, axis=0)
+            eval_hm_batch = eval_hm_inputs[i:i+batch_size]
+            preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
+            test_predictions.append(preds)
+        test_prediction = np.asarray([item for sublist in test_predictions for item in sublist])
 
-    # # running k-cross validation
-    # k_cross_validate_model(train_x,train_y,4)
-    # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
-    # history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=15,shuffle=True)
-    # # printing the model summary
-    # model.summary()
-    # # creating the training loss plot
-    # create_train_plots(history.history["loss"])
+    create_val_plots(train_loss,val_loss)
 
-def make_prediction(model, eval_inputs, eval_genes, bools=False):
+def make_prediction(model, eval_inputs, eval_genes):
     """
     method to make predictions from the model based on the input data
     @param model - a tf.keras.Sequential model
@@ -435,7 +280,7 @@ def make_prediction(model, eval_inputs, eval_genes, bools=False):
     @return - returns the model predictions
     """ 
 
-    return model.call((eval_inputs, eval_genes,bools))
+    return model.predict((eval_inputs, eval_genes))
         
 def evaluation_metrics(prediction, train_y):
     """
@@ -443,7 +288,8 @@ def evaluation_metrics(prediction, train_y):
     @param predictions - predictions of the model
     @param train_y - actual labels to compare the prediction against
     """
-
+    print(train_y)
+    print(prediction)
     r,_ = pearsonr(train_y.flatten(), prediction.flatten())
     loss = mean_squared_error(train_y.flatten(), prediction.flatten())
     return r,loss
@@ -506,6 +352,139 @@ def create_val_plots(training_losses,validation_losses):
     plt.xticks(np.arange(1, len(validation_losses[0])+1, 1))
     plt.legend() 
     plt.savefig('../results/val_plot.png')
+
+def res_saliency_map(hm_input, dna_input, model):
+    train_hm = tf.Variable(tf.expand_dims(hm_input, 0))
+    train_hm = tf.cast(train_hm, tf.float32)
+    train_seq = tf.Variable(dna_input)
+    train_seq = tf.cast(train_seq, tf.float32)
+    with tf.GradientTape() as hm_tape, tf.GradientTape() as seq_tape:
+        seq_tape.watch(train_seq)
+        pred = model.call((train_hm, train_seq))
+        loss_wrt_hm = model.loss(pred, hm_input)
+        loss_wrt_seq = model.loss(pred, dna_input)
+    grads_hm = hm_tape.gradient(loss_wrt_hm, train_hm)
+    grads_seq = seq_tape.gradient(loss_wrt_seq, train_seq)
+
+    print(hm_input)
+    
+    fig, axes = plt.subplots(1,2,figsize=(28,14))
+    i = axes[0].imshow(hm_input, cmap="jet", alpha=0.8)
+    plt.colorbar(i)
+    j = axes[1].imshow(np.squeeze(grads_hm) * hm_input, cmap="jet", alpha=0.8)
+    plt.colorbar(j)
+    fig.savefig('hm_saliency.png')
+
+    print(grads_seq)
+    print(dna_input)
+    print(np.squeeze(grads_seq))
+
+    plt.clf()
+    fig, axes = plt.subplots(1,2,figsize=(28,45))
+    i = axes[0].imshow(np.transpose(dna_input), cmap="jet", alpha=0.8, aspect='auto')
+    plt.colorbar(i)
+    j = axes[1].imshow(np.transpose(np.squeeze(grads_seq) * dna_input), cmap="jet", alpha=0.8, aspect='auto')
+    plt.colorbar(j)
+    fig.savefig('seq_saliency.png')
+
+    plt.clf()
+    plt.figure(figsize=(100,15))
+    plt.plot(range(0,10000),np.squeeze(grads_seq[:,:,0],axis=0), label="A")
+    plt.plot(range(0,10000),np.squeeze(grads_seq[:,:,1],axis=0), label="C")
+    plt.plot(range(0,10000),np.squeeze(grads_seq[:,:,2],axis=0), label="T")
+    plt.plot(range(0,10000),np.squeeze(grads_seq[:,:,3],axis=0), label="G")
+    plt.title('Gradient Across DNA Seq')
+    plt.xlabel('DNA Bases')
+    plt.ylabel('Gradient')
+    plt.legend(loc='upper right')
+    plt.savefig('dna_grad.png')
+
+
+def main():
+    # Keys to npzfile of train & eval
+    train_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E105', 'E011', 'E106', 'E082', 'E097', 'E116', 'E098', 'E058', 
+    'E117', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E127', 'E047', 'E094', 'E007', 'E054', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
+    eval_cells = ['E065', 'E004', 'E066', 'E005', 'E012', 'E027', 'E053', 'E013', 'E028', 'E061', 'E109', 'E120', 'E062', 'E037', 'E038', 'E024', 'E071', 'E105', 'E087', 'E011', 'E106', 'E096', 'E082', 'E097', 
+    'E116', 'E098', 'E058', 'E117', 'E084', 'E059', 'E070', 'E118', 'E085', 'E104', 'E119', 'E006', 'E112', 'E127', 'E047', 'E094', 'E007', 'E054', 'E113', 'E128', 'E095', 'E055', 'E114', 'E100', 'E056', 'E016', 'E122', 'E057', 'E123', 'E079', 'E003', 'E050']
+    # Call get_data() to read in all of the data
+    train_hm_inputs, train_genes, seq_dict, train_expression_vals, eval_hm_inputs, eval_genes, eval_data = get_data(train_cells,eval_cells)
+
+    # autoencoder = Autoencoder(64)
+    # autoencoder.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
+    # autoencoder.fit(train_hm_inputs, train_hm_inputs, batch_size=250, epochs=10, shuffle=True)
+
+    # train_hm_inputs = autoencoder.predict(train_hm_inputs)
+
+    model = COMBmodel()
+    model.built = True
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
+    batch_size = 100
+    num_epochs = 10
+
+    for e in range(num_epochs):
+        loss_list = []
+        num_examples = np.shape(train_hm_inputs)[0]
+        range_indicies = range(0, num_examples)
+        shuffled_indicies = tf.random.shuffle(range_indicies)
+        train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
+        train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
+        train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
+        for i in range(0, num_examples, batch_size):
+            batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
+            batch_genes = train_genes[i:i+batch_size]
+            batch_onehot = [seq_dict[x] for x in batch_genes]
+            batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
+            batch_exp_vals = train_expression_vals[i:i+batch_size]
+            with tf.GradientTape() as tape:
+                output = model.call((batch_hm_inputs, batch_onehot_inputs))
+                loss = model.loss(output, batch_exp_vals)
+                loss_list.append(loss)
+                gradients = tape.gradient(loss, model.trainable_variables)
+                optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        loss = np.mean(loss_list)
+        print('epoch ' + str(e+1) + ': loss ' + str(loss))
+
+    res_saliency_map(train_hm_inputs[0,:,:], seq_dict[train_genes[0]], model)
+
+    num_examples = len(train_genes)
+    train_predictions = []
+    for i in range(0, num_examples, batch_size):
+        train_genes_batch = train_genes[i:i+batch_size]
+        train_onehot = [seq_dict[x] for x in train_genes_batch]
+        train_onehot_batch = np.concatenate(train_onehot, axis=0)
+        train_hm_batch = train_hm_inputs[i:i+batch_size]
+        preds = make_prediction(model, train_hm_batch, train_onehot_batch)
+        train_predictions.append(preds)
+    train_prediction = np.asarray([item for sublist in train_predictions for item in sublist])
+
+    num_examples = len(eval_genes)
+    test_predictions = []
+    for i in range(0, num_examples, batch_size):
+        eval_genes_batch = eval_genes[i:i+batch_size]
+        eval_onehot = [seq_dict[x] for x in eval_genes_batch]
+        eval_onehot_batch = np.concatenate(eval_onehot, axis=0)
+        eval_hm_batch = eval_hm_inputs[i:i+batch_size]
+        preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
+        test_predictions.append(preds)
+    test_prediction = np.asarray([item for sublist in test_predictions for item in sublist])
+
+    # # Call evaluation_metrics to generate the average pearson's correlation and average final MSE for the training sets
+    pearsons,loss = evaluation_metrics(train_prediction, train_expression_vals.numpy())
+    print("Pearsons correlation co-efficent: ", pearsons)
+    print("Average final Mean squared error loss: ", loss)
+
+    plt.clf()
+    plt.figure(figsize=(10,8))
+    plt.hist(train_expression_vals.numpy().flatten(), bins=100, alpha=0.5, label='true vals', color='blue')
+    plt.hist(train_prediction, bins=100, alpha=0.5, label='predictions', color='green')
+    plt.legend(loc='upper right')
+    plt.ylabel('Counts')
+    plt.xlabel('Gene Expression Values')
+    plt.savefig("expression_counts.png")
+
+
+    # Call generate csv to submit the csv to kaggle
+    generate_csv(test_prediction.flatten(), eval_cells, eval_data)
 
 
 if __name__ == '__main__':

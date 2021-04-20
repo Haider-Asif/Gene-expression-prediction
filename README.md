@@ -18,7 +18,7 @@ To run the model please navigate into the code directory of the repository and o
 
 python3 model_final.py
 
-This will run the model which will start with k-fold validation and then move on to training the model properly, it will then calculate the Pearson Correlation Coefficent for the training predictions and labels, and will also calculate the final average MSE. It will then plot the training loss and k-cross validation curves, and generate the csv required for the Kaggle submission. It will also produce interpretation plots showing the histone modification input as a heatmap, the gradient*input for the histone mark data, and a line graph showing the gradient for each of the four bases across the length of the DNA sequence. This will be done for 10 random genes. Lastly, it will plot a histogram showing the distributions of the true expression values and the predicted expression values.
+This will run the model which will start with k-fold validation and then move on to training the model properly, it will then calculate the Pearson Correlation Coefficent for the training predictions and labels, and will also calculate the final average MSE. It will then plot the training loss and k-cross validation curves, and generate the csv required for the Kaggle submission. It will also produce interpretation plots for the histone modification data and DNA sequence data of 10 random genes. Lastly, it will plot a histogram showing the gene expression value distributions.
 
 # Results
 

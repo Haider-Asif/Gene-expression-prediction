@@ -6,7 +6,7 @@ Note: the model for the midterm is model_midterm.py and the model for the final 
 # How to build
 
 To build the appropriate setup to run the code, please follow these steps:
-1) Download the data zip file into your computer.
+1) Download the data zip files into your computer.
 2) Drag and drop (move) the train.npz, the eval.npz, and the seq_data.csv files into the data directory
 3) To ensure that the zip file is not pushed, please do not add it to the git directory, .npz and .csv files will automatically be ignored.
 

@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 from scipy.stats import pearsonr
 from sklearn.metrics import mean_squared_error
 import pandas as pd
-import random
 
 def one_hot_encoding(seq_array):
     """
@@ -122,7 +121,7 @@ class Autoencoder(tf.keras.Model):
     def get_latent(self, x):
         encoded = self.encoder(x)
         return encoded
-
+        
 
 class HMmodel(tf.keras.layers.Layer):
     def __init__(self):
@@ -133,6 +132,9 @@ class HMmodel(tf.keras.layers.Layer):
 
         self.layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
         self.max_pool_2 = tf.keras.layers.MaxPool1D(3)
+
+        # self.layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        # self.max_pool_3 = tf.keras.layers.MaxPool1D(3)
 
         self.flatten = tf.keras.layers.Flatten()
 
@@ -146,10 +148,13 @@ class HMmodel(tf.keras.layers.Layer):
         mp_1 = self.max_pool_1(conv_1)
         conv_2 = self.layer_2(mp_1)
         mp_2 = self.max_pool_2(conv_2)
+        # conv_3 = self.layer_3(mp_2)
+        # mp_3 = self.max_pool_3(conv_3)
         flat = self.flatten(mp_2)
         drop = self.dropout_1(flat)
         dense = self.dense_1(drop)
         return dense
+        # return flat
 
 
 class SEQmodel(tf.keras.layers.Layer):
@@ -158,6 +163,11 @@ class SEQmodel(tf.keras.layers.Layer):
         
         self.layer_1 = tf.keras.layers.Conv1D(128,6,activation=tf.keras.layers.LeakyReLU(0.05), kernel_initializer='glorot_normal', padding="SAME")
         self.max_pool_1 = tf.keras.layers.MaxPool1D(32)
+
+        # self.layer_2 = tf.keras.layers.Conv1D(32,9,activation='relu', kernel_initializer='glorot_normal', padding="SAME")
+        # self.max_pool_2 = tf.keras.layers.MaxPool1D(10)
+
+        # self.bigru = tf.keras.layers.Bidirectional(tf.keras.layers.GRU(10, return_sequences=True))
 
         self.flatten = tf.keras.layers.Flatten()
 
@@ -170,10 +180,16 @@ class SEQmodel(tf.keras.layers.Layer):
     def call(self, seq_batch):
         conv_1 = self.layer_1(seq_batch)
         mp_1 = self.max_pool_1(conv_1)
+        # conv_2 = self.layer_2(mp_1)
+        # mp_2 = self.max_pool_2(conv_2)
         flat = self.flatten(mp_1)
         drop = self.dropout_1(flat)
         dense = self.dense_1(drop)
         return dense
+        # return flat
+        # layer1 = self.bigru(seq_batch)
+        # flat = self.flatten(layer1)
+        # return flat
 
 
 class COMBmodel(tf.keras.Model):
@@ -192,6 +208,16 @@ class COMBmodel(tf.keras.Model):
 
     
     def call(self, inputs):
+        # hm_batch, seq_batch = inputs
+        # hm_flat = self.hm_model(hm_batch)
+        # hm_drop = self.dropout1(hm_flat)
+        # seq_flat = self.seq_model(seq_batch)
+        # seq_drop = self.dropout2(seq_flat)
+        # combined = tf.keras.layers.concatenate([hm_drop, seq_drop])
+        # fully_con1 = self.dense_1(combined)
+        # # fully_con2 = self.dense_2(fully_con1)
+        # output = self.dense_3(fully_con1) 
+        # return output
         hm_batch, seq_batch = inputs
         hm_dense = self.hm_model(hm_batch)
         seq_dense = self.seq_model(seq_batch)
@@ -208,7 +234,7 @@ class COMBmodel(tf.keras.Model):
 
 
 
-def k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_expression_vals, k):
+def k_cross_validate_model(train_x, train_y, k):
     """
     method to run k-cross validation on the model
     @parma train_x - training inputs
@@ -216,81 +242,69 @@ def k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_express
     @param k - split ratio int, data splits into (1 - 1/k) train, and 1/k test ratios
     """
 
-    # set some model hyperparams
-    optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
-    batch_size = 100
-    num_epochs = 10
-
-    # initializing loss arrays
-    kfold_train_loss_list = np.zeros((k, num_epochs))
-    kfold_val_loss_list = np.zeros((k, num_epochs))
-
-    # calling the method to create validation curves
+    val_loss = []
+    train_loss = []
     for i in range(k):
         print('Running fold ' + str(i+1))
-        #initializing the model
-        model = COMBmodel()
-        model.built = True
 
         #spliting the training and validation data
-        eval_hm_inputs = train_hm_inputs[int(i*(1/k)*train_hm_inputs.shape[0]):int((i+1)*(1/k)*train_hm_inputs.shape[0])]
-        eval_genes = train_genes[int(i*(1/k)*train_genes.shape[0]):int((i+1)*(1/k)*train_genes.shape[0])]
-        eval_expression_vals = train_expression_vals[int(i*(1/k)*train_expression_vals.shape[0]):int((i+1)*(1/k)*train_expression_vals.shape[0])]
-        train_hm_inputs = np.concatenate((train_hm_inputs[0:int(i*(1/k)*train_hm_inputs.shape[0])],train_hm_inputs[int((i+1)*(1/k)*train_hm_inputs.shape[0]):train_hm_inputs.shape[0]]), axis=0)
-        train_genes = np.concatenate((train_genes[0:int(i*(1/k)*train_genes.shape[0])],train_genes[int((i+1)*(1/k)*train_genes.shape[0]):train_genes.shape[0]]), axis=0)
-        train_expression_vals = np.concatenate((train_expression_vals[0:int(i*(1/k)*train_expression_vals.shape[0])],train_expression_vals[int((i+1)*(1/k)*train_expression_vals.shape[0]):train_expression_vals.shape[0]]), axis=0)
-
-        epoch_train_loss_list = []
-        epoch_val_loss_list = []
-        for e in range(num_epochs):
-            num_examples = np.shape(train_hm_inputs)[0]
-            range_indicies = range(0, num_examples)
-            shuffled_indicies = tf.random.shuffle(range_indicies)
-            train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
-            train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
-            train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
-
-            train_loss_list = []
-            for i in range(0, num_examples, batch_size):
-                batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
-                batch_genes = train_genes[i:i+batch_size]
-                batch_onehot = [seq_dict[x] for x in batch_genes]
-                batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
-                batch_exp_vals = train_expression_vals[i:i+batch_size]
-                with tf.GradientTape() as tape:
-                    output = model.call((batch_hm_inputs, batch_onehot_inputs))
-                    loss = model.loss(output, batch_exp_vals)
-                    train_loss_list.append(loss)
-                    gradients = tape.gradient(loss, model.trainable_variables)
-                    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-            train_loss = np.mean(train_loss_list)
-            print('epoch ' + str(e+1) + ': training loss ' + str(train_loss))
-            epoch_train_loss_list.append(train_loss)
-
-            num_examples = len(eval_genes)
-            test_predictions = []
-            eval_loss_lst = []
-            for ev in range(0, num_examples, batch_size):
-                eval_genes_batch = eval_genes[ev:ev+batch_size]
-                eval_onehot = [seq_dict[x] for x in eval_genes_batch]
-                eval_onehot_batch = np.concatenate(eval_onehot, axis=0)
-                eval_hm_batch = eval_hm_inputs[ev:ev+batch_size]
-                batch_exp_vals = eval_expression_vals[ev:ev+batch_size]
-                preds = make_prediction(model, eval_hm_batch, eval_onehot_batch)
-                test_predictions.append(preds)
-                loss = model.loss(preds, batch_exp_vals)
-                eval_loss_lst.append(loss)
-            val_loss = np.mean(eval_loss_lst)
-            print('epoch ' + str(e+1) + ': validation loss ' + str(val_loss))
-            epoch_val_loss_list.append(val_loss)
-            test_prediction = np.asarray([item for sublist in test_predictions for item in sublist])
+        validation_x = train_x[int(i*(1/k)*train_x.shape[0]):int((i+1)*(1/k)*train_x.shape[0])]
+        validation_y = train_y[int(i*(1/k)*train_y.shape[0]):int((i+1)*(1/k)*train_y.shape[0])]
+        training_x = np.concatenate((train_x[0:int(i*(1/k)*train_x.shape[0])],train_x[int((i+1)*(1/k)*train_x.shape[0]):train_x.shape[0]]), axis=0)
+        training_y = np.concatenate((train_y[0:int(i*(1/k)*train_y.shape[0])],train_y[int((i+1)*(1/k)*train_y.shape[0]):train_y.shape[0]]), axis=0)
         
-        kfold_train_loss_list[i] = epoch_train_loss_list
-        kfold_val_loss_list[i] = epoch_val_loss_list
+        # constructing the validation model
+        model = tf.keras.Sequential()
+        layer_1 = tf.keras.layers.Conv1D(50,10,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME")
+        max_pool_1 = tf.keras.layers.MaxPool1D(5)
 
-    avg_kfold_train_loss = np.mean(kfold_train_loss_list, axis=1)
-    avg_kfold_val_loss = np.mean(kfold_val_loss_list, axis=1)
-    create_kfold_plots(avg_kfold_train_loss, avg_kfold_val_loss)
+        layer_2 = tf.keras.layers.Conv1D(50,5,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=3)
+        max_pool_2 = tf.keras.layers.MaxPool1D(3)
+
+        layer_3 = tf.keras.layers.Conv1D(50,3,activation=tf.keras.layers.LeakyReLU(0.05), padding="SAME", dilation_rate=2)
+        max_pool_3 = tf.keras.layers.MaxPool1D(3)
+
+        flatten = tf.keras.layers.Flatten()
+
+        dropout1 = tf.keras.layers.Dropout(0.3)
+        Dense_1 = tf.keras.layers.Dense(50,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_2 = tf.keras.layers.Dense(10,activation=tf.keras.layers.LeakyReLU(0.05))
+        Dense_3 = tf.keras.layers.Dense(1,activation=None)
+
+        model.add(layer_1)
+        model.add(max_pool_1)
+
+        model.add(layer_2)
+        model.add(max_pool_2)
+
+        model.add(layer_3)
+        model.add(max_pool_3)
+
+        model.add(flatten)
+
+        model.add(dropout1)
+
+        model.add(Dense_1)
+
+        model.add(Dense_2)
+    
+        model.add(Dense_3)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
+        history = model.fit(x=training_x, y=training_y, batch_size=250, epochs=15, validation_data=(validation_x,validation_y), shuffle=True)
+        val_loss.append(history.history["val_loss"])
+        train_loss.append(history.history["loss"])
+    # calling the method to create validation curves
+    create_val_plots(train_loss,val_loss)
+
+
+    # # running k-cross validation
+    # k_cross_validate_model(train_x,train_y,4)
+    # model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss=tf.keras.losses.MeanSquaredError())
+    # history = model.fit(x=train_x, y=train_y, batch_size=250, epochs=15,shuffle=True)
+    # # printing the model summary
+    # model.summary()
+    # # creating the training loss plot
+    # create_train_plots(history.history["loss"])
 
 def make_prediction(model, eval_inputs, eval_genes):
     """
@@ -308,6 +322,8 @@ def evaluation_metrics(prediction, train_y):
     @param predictions - predictions of the model
     @param train_y - actual labels to compare the prediction against
     """
+    print(train_y)
+    print(prediction)
     r,_ = pearsonr(train_y.flatten(), prediction.flatten())
     loss = mean_squared_error(train_y.flatten(), prediction.flatten())
     return r,loss
@@ -350,27 +366,28 @@ def create_train_plots(training_losses):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.xticks(np.arange(1, len(x)+1, 1))
-    plt.savefig('../results/training_plot.png')
+    plt.savefig('../results/train_plot.png')
 
-def create_kfold_plots(training_losses, validation_losses):
+def create_val_plots(training_losses,validation_losses):
     """
     method to create a plot for the training loss per epoch, and validation loss for the cross-validation scheme
     @param training_losses - array of training losses (1 entry per epoch)
     @param validation_losses - array of validation losses (1 entry per epoch)
     """
 
-    z = [i+1 for i in range(len(training_losses))]
+    z = [i for i in range(len(validation_losses[0]))]
     plt.clf()
-    plt.plot(z, training_losses, label="training_loss")
-    plt.plot(z, validation_losses, label="validation_loss")
-    plt.title('Training and Validation Loss per Epoch')
-    plt.legend(loc='upper right') 
+    for k in range(len(validation_losses)):
+        plt.plot(z, training_losses[k],label="train_loss_fold"+str(k+1))
+        plt.plot(z, validation_losses[k],label="val_loss_fold"+str(k+1))
+    plt.title('Cross Fold Validation Loss per epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.xticks(np.arange(1, len(z)+1, 1))
-    plt.savefig('../results/train_val_plot.png')
+    plt.xticks(np.arange(1, len(validation_losses[0])+1, 1))
+    plt.legend() 
+    plt.savefig('../results/val_plot.png')
 
-def res_saliency_map(hm_input, dna_input, model, num_ex):
+def res_saliency_map(hm_input, dna_input, model):
     train_hm = tf.Variable(tf.expand_dims(hm_input, 0))
     train_hm = tf.cast(train_hm, tf.float32)
     train_seq = tf.Variable(dna_input)
@@ -382,14 +399,27 @@ def res_saliency_map(hm_input, dna_input, model, num_ex):
         loss_wrt_seq = model.loss(pred, dna_input)
     grads_hm = hm_tape.gradient(loss_wrt_hm, train_hm)
     grads_seq = seq_tape.gradient(loss_wrt_seq, train_seq)
+
+    print(hm_input)
     
     fig, axes = plt.subplots(1,2,figsize=(28,14))
     i = axes[0].imshow(hm_input, cmap="jet", alpha=0.8)
     plt.colorbar(i)
     j = axes[1].imshow(np.squeeze(grads_hm) * hm_input, cmap="jet", alpha=0.8)
     plt.colorbar(j)
-    fig.savefig('../results/hm_saliency' + str(num_ex) + '.png')
-    plt.close()
+    fig.savefig('hm_saliency.png')
+
+    print(grads_seq)
+    print(dna_input)
+    print(np.squeeze(grads_seq))
+
+    plt.clf()
+    fig, axes = plt.subplots(1,2,figsize=(28,45))
+    i = axes[0].imshow(np.transpose(dna_input), cmap="jet", alpha=0.8, aspect='auto')
+    plt.colorbar(i)
+    j = axes[1].imshow(np.transpose(np.squeeze(grads_seq) * dna_input), cmap="jet", alpha=0.8, aspect='auto')
+    plt.colorbar(j)
+    fig.savefig('seq_saliency.png')
 
     plt.clf()
     plt.figure(figsize=(100,15))
@@ -401,8 +431,7 @@ def res_saliency_map(hm_input, dna_input, model, num_ex):
     plt.xlabel('DNA Bases')
     plt.ylabel('Gradient')
     plt.legend(loc='upper right')
-    plt.savefig('../results/dna_grad' + str(num_ex) + '.png')
-    plt.close()
+    plt.savefig('dna_grad.png')
 
 
 def main():
@@ -420,8 +449,6 @@ def main():
 
     # train_hm_inputs = autoencoder.predict(train_hm_inputs)
 
-    k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_expression_vals, 4)
-
     model = COMBmodel()
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
@@ -437,6 +464,7 @@ def main():
         train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
         train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
         for i in range(0, num_examples, batch_size):
+            # print(i)
             batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
             batch_genes = train_genes[i:i+batch_size]
             batch_onehot = [seq_dict[x] for x in batch_genes]
@@ -449,12 +477,16 @@ def main():
                 gradients = tape.gradient(loss, model.trainable_variables)
                 optimizer.apply_gradients(zip(gradients, model.trainable_variables))
         loss = np.mean(loss_list)
-        print('epoch ' + str(e+1) + ': loss ' + str(loss))
+        # loss = train(model, optimizer, batch_size, train_hm_inputs, train_genes, seq_dict, train_expression_vals)
+        print('epoch ' + str(e) + ': loss ' + str(loss))
 
-    for ex in range(0,10):
-        rand_ex = random.randint(0, np.shape(train_hm_inputs)[0])
-        res_saliency_map(train_hm_inputs[rand_ex,:,:], seq_dict[train_genes[rand_ex]], model, rand_ex)
+    res_saliency_map(train_hm_inputs[0,:,:], seq_dict[train_genes[0]], model)
 
+    # Call remove_borders() to properly modify the training labels
+    # Call train_model() to train the model
+    # model = train_model(train_x,train_y)
+
+    # Call make_prediction to generate predictions for training and eval sets
     num_examples = len(train_genes)
     train_predictions = []
     for i in range(0, num_examples, batch_size):
@@ -489,7 +521,7 @@ def main():
     plt.legend(loc='upper right')
     plt.ylabel('Counts')
     plt.xlabel('Gene Expression Values')
-    plt.savefig("../results/expression_counts.png")
+    plt.savefig("expression_counts.png")
 
 
     # Call generate csv to submit the csv to kaggle

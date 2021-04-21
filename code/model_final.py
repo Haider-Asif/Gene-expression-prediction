@@ -56,7 +56,6 @@ def get_data(train_cells,eval_cells):
     train_genes = []
     gene2seq = {}
     for num, cell in enumerate(train_cells):
-        print(cell)
         cell_data = train_data[cell]
         hm_data = cell_data[:,:,1:6]
         exp_values = cell_data[:,0,6]
@@ -236,27 +235,27 @@ def k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_express
         eval_hm_inputs = train_hm_inputs[int(i*(1/k)*train_hm_inputs.shape[0]):int((i+1)*(1/k)*train_hm_inputs.shape[0])]
         eval_genes = train_genes[int(i*(1/k)*train_genes.shape[0]):int((i+1)*(1/k)*train_genes.shape[0])]
         eval_expression_vals = train_expression_vals[int(i*(1/k)*train_expression_vals.shape[0]):int((i+1)*(1/k)*train_expression_vals.shape[0])]
-        train_hm_inputs = np.concatenate((train_hm_inputs[0:int(i*(1/k)*train_hm_inputs.shape[0])],train_hm_inputs[int((i+1)*(1/k)*train_hm_inputs.shape[0]):train_hm_inputs.shape[0]]), axis=0)
-        train_genes = np.concatenate((train_genes[0:int(i*(1/k)*train_genes.shape[0])],train_genes[int((i+1)*(1/k)*train_genes.shape[0]):train_genes.shape[0]]), axis=0)
-        train_expression_vals = np.concatenate((train_expression_vals[0:int(i*(1/k)*train_expression_vals.shape[0])],train_expression_vals[int((i+1)*(1/k)*train_expression_vals.shape[0]):train_expression_vals.shape[0]]), axis=0)
+        train_hm_inputs_kf = np.concatenate((train_hm_inputs[0:int(i*(1/k)*train_hm_inputs.shape[0])],train_hm_inputs[int((i+1)*(1/k)*train_hm_inputs.shape[0]):train_hm_inputs.shape[0]]), axis=0)
+        train_genes_kf = np.concatenate((train_genes[0:int(i*(1/k)*train_genes.shape[0])],train_genes[int((i+1)*(1/k)*train_genes.shape[0]):train_genes.shape[0]]), axis=0)
+        train_expression_vals_kf = np.concatenate((train_expression_vals[0:int(i*(1/k)*train_expression_vals.shape[0])],train_expression_vals[int((i+1)*(1/k)*train_expression_vals.shape[0]):train_expression_vals.shape[0]]), axis=0)
 
         epoch_train_loss_list = []
         epoch_val_loss_list = []
         for e in range(num_epochs):
-            num_examples = np.shape(train_hm_inputs)[0]
+            num_examples = np.shape(train_hm_inputs_kf)[0]
             range_indicies = range(0, num_examples)
             shuffled_indicies = tf.random.shuffle(range_indicies)
-            train_hm_inputs = tf.gather(train_hm_inputs, shuffled_indicies)
-            train_genes = tf.gather(train_genes, shuffled_indicies).numpy().tolist()
-            train_expression_vals = tf.gather(train_expression_vals, shuffled_indicies)
+            train_hm_inputs_kf = tf.gather(train_hm_inputs_kf, shuffled_indicies)
+            train_genes_kf = tf.gather(train_genes_kf, shuffled_indicies).numpy().tolist()
+            train_expression_vals_kf = tf.gather(train_expression_vals_kf, shuffled_indicies)
 
             train_loss_list = []
-            for i in range(0, num_examples, batch_size):
-                batch_hm_inputs = train_hm_inputs[i:i+batch_size,:,:]
-                batch_genes = train_genes[i:i+batch_size]
+            for tr in range(0, num_examples, batch_size):
+                batch_hm_inputs = train_hm_inputs_kf[tr:tr+batch_size,:,:]
+                batch_genes = train_genes_kf[tr:tr+batch_size]
                 batch_onehot = [seq_dict[x] for x in batch_genes]
                 batch_onehot_inputs = np.concatenate(batch_onehot, axis=0)
-                batch_exp_vals = train_expression_vals[i:i+batch_size]
+                batch_exp_vals = train_expression_vals_kf[tr:tr+batch_size]
                 with tf.GradientTape() as tape:
                     output = model.call((batch_hm_inputs, batch_onehot_inputs))
                     loss = model.loss(output, batch_exp_vals)
@@ -288,8 +287,8 @@ def k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_express
         kfold_train_loss_list[i] = epoch_train_loss_list
         kfold_val_loss_list[i] = epoch_val_loss_list
 
-    avg_kfold_train_loss = np.mean(kfold_train_loss_list, axis=1)
-    avg_kfold_val_loss = np.mean(kfold_val_loss_list, axis=1)
+    avg_kfold_train_loss = np.mean(kfold_train_loss_list, axis=0)
+    avg_kfold_val_loss = np.mean(kfold_val_loss_list, axis=0)
     create_kfold_plots(avg_kfold_train_loss, avg_kfold_val_loss)
 
 def make_prediction(model, eval_inputs, eval_genes):

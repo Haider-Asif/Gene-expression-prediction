@@ -14,8 +14,8 @@ def get_data(train_cells,eval_cells):
     """
 
     # Load data
-    train_data = np.load('../data/train.npz')
-    eval_data = np.load('../data/eval.npz')
+    train_data = np.load('../../train.npz')
+    eval_data = np.load('../../eval.npz')
 
     # Combine Train Data to use information from all cells
     train_inputs = [] # Input histone mark data
@@ -28,6 +28,11 @@ def get_data(train_cells,eval_cells):
         train_outputs.append(exp_values)
 
     train_inputs = np.concatenate(train_inputs, axis=0)
+    print('im show')
+    test = plt.imshow(train_inputs[0,:,:]) #, aspect='auto'
+    plt.xticks([0,4])
+    plt.colorbar(test)
+    plt.show()
     train_outputs = np.concatenate(train_outputs, axis=0)
 
     # Prepare Eval inputs in similar way
@@ -244,19 +249,19 @@ def main():
     train_x, train_y, test_x, test_data = get_data(train_cells,eval_cells)
     # Call remove_borders() to properly modify the training labels
     # Call train_model() to train the model
-    model = train_model(train_x,train_y)
-    # Call make_prediction to generate predictions for raining and eval sets
-    test_prediction = make_prediction(model, test_x)
+    # model = train_model(train_x,train_y)
+    # # Call make_prediction to generate predictions for raining and eval sets
+    # test_prediction = make_prediction(model, test_x)
 
-    train_prediction = make_prediction(model,train_x)
+    # train_prediction = make_prediction(model,train_x)
 
-    # Call evaluation_metrics to generate the average pearson's correlation and average final MSE for the training sets
-    pearsons,loss = evaluation_metrics(train_prediction, train_y)
-    print("Pearsons correlation co-efficent: ", pearsons)
-    print("Average final Mean squared error loss: ",loss)
+    # # Call evaluation_metrics to generate the average pearson's correlation and average final MSE for the training sets
+    # pearsons,loss = evaluation_metrics(train_prediction, train_y)
+    # print("Pearsons correlation co-efficent: ", pearsons)
+    # print("Average final Mean squared error loss: ",loss)
 
-    # Call generate csv to submit the csv to kaggle
-    generate_csv(test_prediction.flatten(),eval_cells, test_data)
+    # # Call generate csv to submit the csv to kaggle
+    # generate_csv(test_prediction.flatten(),eval_cells, test_data)
 
 
 if __name__ == '__main__':

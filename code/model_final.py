@@ -420,8 +420,6 @@ def main():
 
     # train_hm_inputs = autoencoder.predict(train_hm_inputs)
 
-    k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_expression_vals, 4)
-
     model = COMBmodel()
     model.built = True
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
@@ -450,6 +448,8 @@ def main():
                 optimizer.apply_gradients(zip(gradients, model.trainable_variables))
         loss = np.mean(loss_list)
         print('epoch ' + str(e+1) + ': loss ' + str(loss))
+
+    k_cross_validate_model(train_hm_inputs, train_genes, seq_dict, train_expression_vals, 4)
 
     for ex in range(0,10):
         rand_ex = random.randint(0, np.shape(train_hm_inputs)[0])

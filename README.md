@@ -1,4 +1,4 @@
-# CS1850-midterm-1
+# CS1850-project
 Private reposity for CS1850 Midterm Project and Final Project Code for team WakaWaka - Isaac Nathoo and Muhammad Haider Asif
 
 Note: the model for the midterm is model_midterm.py and the model for the final is model_final.py
